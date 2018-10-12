@@ -68,7 +68,9 @@ or
     [Optional] aliases: [String]
         Alternative names that this post can be referenced by. Must be unique across all posts.
 ```
-Note that the template used, and the required information for it, is determined by the `type`. Currently `type` can be either "Post" or "Category", where Post denotes something (ie a game), while Category denotes a group of things. Note that they can reference each other (using the parents field) arbitrarily; that is, a post can be the parent of many categories, and a category can be the parent of many posts, or category-\>category, or whatever combination you wish.
+Note that the template used, and the required information for it, is determined by the `type`. Currently `type` can be either "Post" or "Category", where Post denotes something (ie a game), while Category denotes a group of things. 
+
+Note that they can reference each other (using the parents field) arbitrarily; that is, a post can be the parent of many categories, and a category can be the parent of many posts, or category-\>category, or whatever combination you wish.
 
 ## Example Usage
 
