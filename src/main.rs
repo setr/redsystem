@@ -41,8 +41,9 @@ fn argparse<'a>() -> ArgMatches<'a> {
         .arg(
             Arg::with_name("v")
                 .short("v")
+                .long("verbose")
                 .multiple(true)
-                .help("Verbosity"),
+                .help("Use verbose output. Repeat to increase verbosity, up to 3 times."),
         ).arg(
             Arg::with_name("outdir")
                 .long("outdir")
@@ -52,7 +53,7 @@ fn argparse<'a>() -> ArgMatches<'a> {
                 .default_value("./www"),
         ).arg(
             Arg::with_name("delete_outdir")
-                .long("force_delete")
+                .long("force-delete")
                 .short("f")
                 .help("delete outdir without prompting"),
         ).arg(
@@ -70,18 +71,18 @@ fn argparse<'a>() -> ArgMatches<'a> {
                 .takes_value(true)
                 .default_value("./posts"),
         ).arg(
-            Arg::with_name("run_server")
+            Arg::with_name("run-server")
             .long("run_server")
             .short("r")
             .help("Run a simple webserver on localhost, serving `outdir`, to test the generated posts")    
         ).arg(
             Arg::with_name("print_graph")
-            .long("print_graph")
+            .long("print-graph")
             .short("g")
             .help("print a graphviz graph at the end of processing, to visually check the post relationship structure")
         ).arg(
             Arg::with_name("no_html")
-            .long("no_html")
+            .long("no-html")
             .short("n")
             .help("Don't actually generate the posts. Useful for just validating structure, or with -g to only print the graph.")
         ).get_matches()

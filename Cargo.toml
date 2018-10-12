@@ -2,7 +2,8 @@
 name = "redsystem"
 version = "0.1.0"
 authors = ["setr <nokhand@gmail.com>"]
-description = "Blog generator with cyclical graph structure"
+description = "Static blog generator with cyclical digraph structure"
+
 [dependencies]
 petgraph = "0.4.13"
 quick-error = "1.2.2"
