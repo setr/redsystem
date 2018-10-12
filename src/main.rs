@@ -71,8 +71,8 @@ fn argparse<'a>() -> ArgMatches<'a> {
                 .takes_value(true)
                 .default_value("./posts"),
         ).arg(
-            Arg::with_name("run-server")
-            .long("run_server")
+            Arg::with_name("run_server")
+            .long("run-server")
             .short("r")
             .help("Run a simple webserver on localhost, serving `outdir`, to test the generated posts")    
         ).arg(
