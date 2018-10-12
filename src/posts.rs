@@ -1,0 +1,169 @@
+use errors;
+use errors::IOError::*;
+use quick_error::ResultExt;
+use std::collections::HashSet;
+use std::fs;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::PathBuf;
+use toml;
+#[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Category {
+    pub name: String,
+    #[serde(default)]
+    pub parents: Vec<String>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
+    #[serde(skip)]
+    pub body: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(deny_unknown_fields)]
+pub struct Post {
+    pub name: String,
+    #[serde(default)]
+    pub parents: Vec<String>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub image: String,
+    #[serde(default)]
+    pub year: String,
+    #[serde(default)]
+    pub dl_url: String,
+
+    #[serde(skip)]
+    pub body: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "type")]
+pub enum PostTypes {
+    Post(Post),
+    Category(Category),
+}
+
+impl PostTypes {
+    pub fn name(&self) -> &str {
+        match self {
+            PostTypes::Post(p) => &p.name,
+            PostTypes::Category(c) => &c.name,
+        }
+    }
+    pub fn names(&self) -> Vec<&str> {
+        match self {
+            PostTypes::Post(p) => {
+                let mut names: Vec<&str> = p.aliases.iter().map(|s| s.as_ref()).collect();
+                names.push(&p.name);
+                names
+            }
+            PostTypes::Category(c) => {
+                let mut names: Vec<&str> = c.aliases.iter().map(|s| s.as_ref()).collect();
+                names.push(&c.name);
+                names
+            }
+        }
+    }
+    pub fn parents(&self) -> &Vec<String> {
+        match self {
+            PostTypes::Post(p) => &p.parents,
+            PostTypes::Category(c) => &c.parents,
+        }
+    }
+}
+
+pub fn get_post(filepath: &PathBuf) -> Result<PostTypes, errors::IOError> {
+    trace!("Parsing post {:?}", filepath);
+    let mut f = File::open(filepath).context(filepath)?;
+    let mut contents = String::new();
+    f.read_to_string(&mut contents).context(filepath)?;
+    let mut split = contents.splitn(2, "\n---\n");
+    let tomlcfg = match split.next() {
+        Some(s) => s.to_string(),
+        None => return Err(missing_post_header(filepath.to_path_buf())),
+    };
+
+    let body = match split.next() {
+        Some(s) => s.to_string(),
+        None => String::new(),
+    };
+
+    match toml::from_str::<PostTypes>(&tomlcfg) {
+        Ok(s) => match s {
+            PostTypes::Post(mut p) => {
+                p.body = body;
+                Ok(PostTypes::Post(p))
+            }
+            PostTypes::Category(mut c) => {
+                c.body = body;
+                Ok(PostTypes::Category(c))
+            }
+        },
+        Err(e) => Err(invalid_header(e, filepath.to_path_buf())),
+    }
+}
+
+fn find_files<F: Fn(&PathBuf) -> bool>(
+    dir: &PathBuf,
+    filepaths: &mut Vec<PathBuf>,
+    filter: &F,
+) -> Result<(), errors::IOError> {
+    for entry in fs::read_dir(dir).context(dir)? {
+        let path = entry.context(dir)?.path();
+        if path.is_dir() {
+            find_files(&path, filepaths, filter)?;
+        } else if filter(&path) {
+            filepaths.push(path);
+        }
+    }
+    Ok(())
+}
+
+pub fn get_posts(postdir: &PathBuf) -> Result<Vec<PostTypes>, Vec<errors::IOError>> {
+    let mut filenames = vec![];
+
+    if find_files(postdir, &mut filenames, &|p| match p.extension() {
+        Some(ext) => ext == "toml",
+        None => false,
+    }).is_err()
+    {
+        return Err(vec![missing_directory(postdir.to_path_buf())]);
+    }
+    info!("Found {} posts", filenames.len());
+    let (posts, errors): (Vec<_>, Vec<_>) = filenames
+        .iter()
+        .map(|ref f| get_post(&f.to_path_buf()))
+        .partition(Result::is_ok);
+
+    if errors.is_empty() {
+        let finalposts: Vec<_> = posts.into_iter().map(Result::unwrap).collect();
+        let mut errors = vec![];
+        // all this, just to verify that posts have unique names/aliases
+        // check has to be done at this point, while we can still map posts back to the original filename it came from
+        // otherwise, we'll need to store and return it
+        for (n, (f, p)) in filenames.iter().zip(&finalposts).enumerate() {
+            let names = p.names();
+            let nameset: HashSet<_> = names.iter().collect();
+            for (f2, p2) in filenames.iter().zip(&finalposts).skip(n + 1) {
+                let names2 = p2.names();
+                let nameset2: HashSet<_> = names2.iter().collect();
+                let mut collisions = nameset
+                    .intersection(&nameset2)
+                    .map(|n| duplicate_name((*n).to_string(), f.to_path_buf(), f2.to_path_buf()))
+                    .collect();
+                errors.append(&mut collisions);
+            }
+        }
+        if errors.is_empty() {
+            Ok(finalposts)
+        } else {
+            Err(errors)
+        }
+    } else {
+        Err(errors.into_iter().map(Result::unwrap_err).collect())
+    }
+}

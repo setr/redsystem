@@ -1,0 +1,29 @@
+<html>
+<link rel="stylesheet" type="text/css" href="/css/root.css">
+<title>redsys.pw</title>
+</html>
+
+<body>
+<div class="wrapper">
+    <div class="box url">
+        <a href="./">redsys.pw</a>
+    </div>
+    <div class="box blank"></div>
+    <div class="box title">
+        <div class="left">redsys.pw</div>
+        <div class="box image"><img src="{{ image }}"></div>
+        <div class="box body">
+            <ul style="list-style-type: none;">
+                {% for p in posts %}
+                    <li><a href="{{ p.name }}.html">/{{ p.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="box link">
+            <div class="link url">
+
+            </div>
+            <div class="link blank"></div>
+        </div>
+    </div>
+</body>
