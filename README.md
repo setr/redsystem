@@ -95,14 +95,22 @@ Lorem ipsum dolor sit amet, magna iusto senserit vel in, ignota eirmod officiis 
 ### Another Example post
 ```
 type = "Post"
-name = 'post1'
-parents = ["catA", "catB", "Omega"]
+name = 'Star Control II - The Urquan Masters'
+aliases = ["Star Control II", "Star Control 2"]
+image = "https://draginol.stardock.net/images2018/The-art-of-Star-Control_C786/image.png"
+year = "1992"
+parents = ["SciFi"]
+---
+**Star Control II: The Ur-Quan Masters** is a science fiction video game, a sequel to Star Control. It was developed by Toys for Bob and originally published by Accolade in 1992 for MS-DOS. 
+
+It was later ported to the 3DO by Crystal Dynamics in 1994 with an enhanced multimedia presentation, allowed by the CD technology.
 ```
 
 ### Example category
 ```
 type="Category"
-name="catA"
+name="Science Fiction"
+aliases=["SciFi", "Sci-Fi"]
 ---
 slkjsdlfdjsl
 ```
