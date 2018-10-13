@@ -86,6 +86,16 @@ impl<'a> Graph<'a> {
             .map(|s| self.ix_to_name(s).to_string())
             .collect()
     }
+    pub fn get_parent_names(self: &Self, post: &'a PostTypes) -> Vec<String> {
+        // now do the inverse; read the defined relationships and determine the child-relationship
+        // which we'll use for the post's links.
+
+        let idx = self.name_map[post.name()];
+        self.graph
+            .neighbors_directed(idx, petgraph::Direction::Incoming)
+            .map(|s| self.ix_to_name(s).to_string())
+            .collect()
+    }
 
     pub fn add_node(self: &mut Self, item: &'a PostTypes) -> petgraph::graph::NodeIndex {
         let node = self.graph.add_node(PostNode::Node(item));

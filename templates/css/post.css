@@ -101,7 +101,10 @@ div.box.image > img {
   "img tags"
   "body link"
 }
-
+.uparrow {
+  transform: rotate(-90deg);
+  display: inline-block;
+}
 .box {
   color: black;
   font-size: 150%

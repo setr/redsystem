@@ -181,6 +181,7 @@ fn main() {
     unwrap_or_exits(graph.add_posts(&posts));
     for post in &posts {
         post.set_children_names(graph.get_children_names(&post));
+        post.set_parent_names(graph.get_parent_names(&post));
     }
 
     if !args.is_present("no_html") {

@@ -1,6 +1,6 @@
-{% import "macros.jinja2" as macros %}
 {% set name = cat.name %}
 <html>
+<meta charset="UTF-8">
 <link rel="stylesheet" type="text/css" href="/css/category.css">
 <title>{{ cat.name }}</title>
 </html>
@@ -19,9 +19,22 @@
                 </div>
             </div>
         {% endfor %}
-        {% for p in childposts %} 
+        {% for post in childposts %} 
             <div class="post_wrapper">
-            {{macros::post_header(post=p, parent=name)}}
+                <div class="box title">
+                        <div class="left"><a href="{{ name ~ '/' ~ post.name | urlencode }}.html">{{ post.name }}</a></div>{% if post.year %}
+                        <div class="right">[{{ post.year }}]</div>{% endif %}</div>
+                    <div class="box image"><img src="{{ post.image }}"></div>
+                    <div class="box tags">
+                        <ul style="list-style-type: none;">
+                        {% for other_parent in post.parent_names %}
+                            <li ><a class="parent_url" href="{{ name ~ '/' ~ post.name ~ '/' ~ other_parent | urlencode }}.html"><span class="uparrow">➤</span> /{{ other_parent }}</a></li>
+                        {% endfor %}
+                        {% for child in post.children %}
+                            <li ><a class="child_url" href="{{ name ~ '/' ~ post.name ~ '/' ~ child | urlencode }}.html">/{{ child }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         {% endfor %}
     </div>

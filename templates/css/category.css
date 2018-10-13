@@ -94,7 +94,10 @@ div.box.image > img {
 .link.blank{
   flex-grow: 1;
 }
-
+.uparrow {
+  transform: rotate(-90deg);
+  display: inline-block;
+}
 
 .cat_wrapper {
   display: grid;
