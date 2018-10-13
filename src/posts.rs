@@ -21,6 +21,8 @@ pub struct Category {
     pub body: String,
     #[serde(skip_deserializing)]
     pub children: RefCell<Vec<String>>,
+    #[serde(skip_deserializing)]
+    pub parent_names: RefCell<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -44,6 +46,8 @@ pub struct Post {
     pub body: String,
     #[serde(skip_deserializing)]
     pub children: RefCell<Vec<String>>,
+    #[serde(skip_deserializing)]
+    pub parent_names: RefCell<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,6 +88,12 @@ impl PostTypes {
         match self {
             PostTypes::Post(p) => p.children.borrow_mut().extend(children),
             PostTypes::Category(c) => c.children.borrow_mut().extend(children),
+        }
+    }
+    pub fn set_parent_names(&self, parents: Vec<String>) {
+        match self {
+            PostTypes::Post(p) => p.parent_names.borrow_mut().extend(parents),
+            PostTypes::Category(c) => c.parent_names.borrow_mut().extend(parents),
         }
     }
 }

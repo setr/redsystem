@@ -1,5 +1,5 @@
-{% import "macros.jinja2" as macros %}
 <html>
+<meta charset="UTF-8">
 <link rel="stylesheet" type="text/css" href="/css/post.css">
 <title>{{ post.name }}</title>
 </html>
@@ -9,7 +9,20 @@
         <a id="siteurl" href="/">redsys.pw</a>/<a id="path", href="{{ post.name | urlencode }}.html">{{ post.name }}</a> <!-- PATH TO FILE, IF JS -->
     </div>
     <div class="box blank"></div>
-    {{macros::post_header(post=post)}}
+        <div class="box title">
+        <div class="left">{{ post.name }}</div>{% if post.year %}
+        <div class="right">[{{ post.year }}]</div>{% endif %}</div>
+    <div class="box image"><img src="{{ post.image }}"></div>
+    <div class="box tags">
+        <ul style="list-style-type: none;">
+            {% for other_parent in post.parent_names %}
+                <li ><a class="parent_url" href="{{ '../' ~ other_parent | urlencode }}.html"><span style="transform: rotate(-90deg);display: inline-block;">➤</span> /{{ other_parent }}</a></li>
+            {% endfor %}
+            {% for child in post.children %}
+                <li ><a class="child_url" href="{{ post.name ~ '/' ~  child | urlencode }}.html">/{{ child }}</a></li>
+            {%endfor%}
+        </ul>
+    </div>
     <div class="box body">
         {{ post.body | parsemd | safe }}
     </div>
@@ -25,9 +38,9 @@
 // if we're in a cycle, we'd have to generate an infinite number of symlinks in the current system
 // so instead, if we encounter a node we've already seen, we retreat back up the path to the previous
 // occurrence.
-function update_cyclical_children(){
+function update_cyclical_children(classname){
 let parents = window.location.pathname.split('/').slice(1, -1);
-let children = document.getElementsByClassName("child_url");
+let children = document.getElementsByClassName(classname);
 Array.from(children).forEach(
 	function(child, index) { 
 		let nextPost = child.getAttribute("href").split('/').slice(-1)[0].slice(0,-5);

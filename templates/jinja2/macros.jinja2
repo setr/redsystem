@@ -1,15 +1,22 @@
-{% macro post_header(post, parent="") -%}
+{% macro post_header(post, direct_parent="") -%} 
     <div class="box title">
-        <div class="left">{% if parent != "" %} <a href="{{ parent ~ '/' ~ post.name | urlencode }}.html">{{ post.name }}</a> {%else%}{{ post.name }}{%endif%}</div>{% if post.year %}
+        <div class="left">{% if parent != "" %} <a href="{{ direct_parent ~ '/' ~ post.name | urlencode }}.html">{{ post.name }}</a> {%else%}{{ post.name }}{%endif%}</div>{% if post.year %}
         <div class="right">[{{ post.year }}]</div>{% endif %}</div>
     <div class="box image"><img src="{{ post.image }}"></div>
     <div class="box tags">
         <ul style="list-style-type: none;">
+            {% for other_parent in post.parent_names %}
+                {% if direct_parent == "" %} 
+                <li ><a class="parent_url" href="{{ '../' ~ other_parent | urlencode }}.html"><span style="transform: rotate(-90deg);display: inline-block;">➤</span>/{{ other_parent }}</a></li>
+                {% else %}
+                {%endif%}
+
+            {% endfor %}
             {% for child in post.children %}
-                {% if parent == "" %}
+                {% if direct_parent == "" %}
                 <li ><a class="child_url" href="{{ post.name ~ '/' ~  child | urlencode }}.html">/{{ child }}</a></li>
                 {%else%}
-                <li ><a class="child_url" href="{{ parent ~ '/' ~ post.name ~ '/' ~ child | urlencode }}.html">/{{ child }}</a></li>
+                <li ><a class="child_url" href="{{ direct_parent ~ '/' ~ post.name ~ '/' ~ child | urlencode }}.html">/{{ child }}</a></li>
                 {%endif%}
             {% endfor %}
         </ul>
