@@ -5,13 +5,13 @@ use posts::PostTypes;
 use pulldown_cmark::{html, Parser};
 use quick_error::ResultExt;
 use std;
+use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
 use std::io::prelude::Write;
 use std::path::{Path, PathBuf};
 use symlink::symlink_file;
 use tera;
-use tera::{to_value, Context, Tera};
-
+use tera::{from_value, to_value, Context, Tera};
 #[derive(Debug)]
 pub struct PostHtml {
     filename: String,
@@ -35,24 +35,18 @@ pub fn get_templates(templateglob: &str) -> Tera {
 
 fn gen_post(tera: &Tera, post: &PostTypes, graph: &Graph) -> Result<PostHtml, tera::Error> {
     let mut ctx = Context::new();
-    let children = graph.get_children(post);
+
     let html = match post {
         PostTypes::Post(p) => {
-            ctx.insert("name", &p.name);
-            ctx.insert("body", &p.body);
-            ctx.insert("children", &children);
-            ctx.insert("year", &p.year);
-            ctx.insert("image", &p.image);
-            ctx.insert("dlurl", &p.dl_url);
+            ctx.insert("post", &p);
+            ctx.insert("children", &*p.children.borrow());
             tera.render("post.jinja2", &ctx)
         }
         PostTypes::Category(ref c) => {
-            ctx.insert("name", &c.name);
-            ctx.insert("body", &c.body);
-            ctx.insert("children", &children);
-            ctx.insert("year", "1998");
-            ctx.insert("image", "");
-            ctx.insert("dlurl", "");
+            //ctx.insert("category", c);
+            ctx.insert("cat", c);
+            ctx.insert("childcats", &graph.get_child_cats(post));
+            ctx.insert("childposts", &graph.get_child_posts(post));
             tera.render("category.jinja2", &ctx)
         }
     };

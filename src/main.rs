@@ -26,6 +26,7 @@ mod posts;
 use dialoguer::Confirmation;
 use gen_html::{create_posts, create_symlinks, gen_posts_html, get_templates};
 use post_graph::Graph;
+use posts::PostTypes;
 use simplelog::{Config, LevelFilter, TermLogger};
 use std::fmt::{Debug, Display};
 use std::fs::{copy, create_dir, create_dir_all, read_dir, remove_dir_all};
@@ -89,20 +90,20 @@ fn argparse<'a>() -> ArgMatches<'a> {
 }
 fn unwraps_or_exits<T, E: Display + Debug>(t: Result<Vec<T>, Vec<E>>) -> Vec<T> {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{}", e));
+        errors.iter().for_each(|e| error!("{:?}", e));
         std::process::exit(1)
     })
 }
 fn unwrap_or_exits<T, E: Display + Debug>(t: Result<T, Vec<E>>) -> T {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{}", e));
+        errors.iter().for_each(|e| error!("{:?}", e));
         std::process::exit(1)
     })
 }
 
 fn unwrap_or_exit<T, E: Display + Debug>(t: Result<T, E>) -> T {
     t.unwrap_or_else(|e| {
-        error!("{}", e);
+        error!("{:?}", e);
         std::process::exit(1)
     })
 }
@@ -169,8 +170,6 @@ fn main() {
     };
     TermLogger::init(loglevel, Config::default()).unwrap();
 
-    debug!("Fetching templates from {:?}", templateglob);
-    let tera = get_templates(&templateglob);
     // read out the markdown to structs
     info!("Parsing posts..");
     let posts: Vec<_> = unwraps_or_exits(posts::get_posts(&postdir.to_path_buf()));
@@ -178,9 +177,16 @@ fn main() {
     // graph based on parents; we'll generate the symlinks from the graph.
     debug!("Constructing graph");
     let mut graph = Graph::new();
+
     unwrap_or_exits(graph.add_posts(&posts));
+    for post in &posts {
+        post.set_children_names(graph.get_children_names(&post));
+    }
 
     if !args.is_present("no_html") {
+        debug!("Fetching templates from {:?}", templateglob);
+        let tera = get_templates(&templateglob);
+
         create_www(&wwwdir, &srcdir, &cssdir, args.is_present("delete_outdir"));
         // struct -> html
         info!("Generating html..");

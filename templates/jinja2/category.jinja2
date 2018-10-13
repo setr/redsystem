@@ -1,56 +1,33 @@
+{% import "macros.jinja2" as macros %}
+{% set name = cat.name %}
 <html>
-<link rel="stylesheet" type="text/css" href="/css/game.css">
-<title>{{ name }}</title>
+<link rel="stylesheet" type="text/css" href="/css/category.css">
+<title>{{ cat.name }}</title>
 </html>
 <body>
-<div class="wrapper">
-    <div class="box url">
+<div class="cat_wrapper">
+    <div class="box cat_url">
         <a id="siteurl" href="/">redsys.pw</a>/<a id="path", href="{{ name | urlencode }}.html">{{ name }}</a> <!-- PATH TO FILE, IF JS -->
     </div>
     <div class="box blank"></div>
-    <div class="box title">
-        <div class="left">{{ name }}</div>{% if post.year %}
-        <div class="right">[{{ year }}]</div>{% endif %}</div>
-    <div class="box image"><img src="{{ image }}"></div>
-    <div class="box tags">
-        <ul style="list-style-type: none;">
-            {% for child in children %}
-                <li ><a class="child_url" href="{{ name | urlencode }}/{{ child | urlencode }}.html">/{{ child }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="box body">
-        {{ body | parsemd | safe }}
-    </div>
-    <div class="box link">
-        <div class="link url">
-            <a href={{ dlurl }}>{{ dlurl }}</a>
-        </div>
-        <div class="link blank"></div>
+    <div class="box items">
+        <!-- For every child, we'll simply need a link to the next category. Notably, categories come before posts. -->
+        {% for c in childcats %}
+            <div class="childcat">
+                <div class="box cat_child_title">
+                    <a class="cat_child_url" href="{{ name | urlencode }}/{{ c.name | urlencode }}.html">/{{ c.name }}</a>
+                </div>
+            </div>
+        {% endfor %}
+        {% for p in childposts %} 
+            <div class="post_wrapper">
+            {{macros::post_header(post=p, parent=name)}}
+            </div>
+        {% endfor %}
     </div>
 </div>
 </body>
 <script type="text/javascript">
-// if we're in a cycle, we'd have to generate an infinite number of symlinks in the current system
-// so instead, if we encounter a node we've already seen, we retreat back up the path to the previous
-// occurrence.
-function update_cyclical_children(){
-let parents = window.location.pathname.split('/').slice(1, -1);
-let children = document.getElementsByClassName("child_url");
-Array.from(children).forEach(
-	function(child, index) { 
-		let nextPost = child.getAttribute("href").split('/').slice(-1)[0].slice(0,-5);
-		for (var i in parents) {
-			if (parents[i] === nextPost) {
-				console.log(i);
-				let newurl = parents.slice(0, i).join('/') + "/" + nextPost + ".html";
-				children.item(index).href = newurl
-				console.log(newurl);
-				return
-         	}
-        }
-	}) 
-}
 function update_path(){
     let path = window.location.pathname.split('/').slice(1, -1);
     var sitenode = document.getElementById('siteurl');
@@ -62,9 +39,6 @@ function update_path(){
         sitenode.parentNode.insertBefore(a, sitenode.nextSibling);
     }
 }
-// TODO: each component of the box url should be a link to that page
-// has to be done dynamically, based on the document url. (otherwise we'd need unique pages instead of symlinks)
-update_cyclical_children();
 update_path();
 </script>
 </html>

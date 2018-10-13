@@ -1,13 +1,15 @@
 use errors;
 use errors::IOError::*;
 use quick_error::ResultExt;
+use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use toml;
-#[derive(Debug, Deserialize, Clone)]
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Category {
     pub name: String,
@@ -15,11 +17,13 @@ pub struct Category {
     pub parents: Vec<String>,
     #[serde(default)]
     pub aliases: Vec<String>,
-    #[serde(skip)]
+    #[serde(skip_deserializing)]
     pub body: String,
+    #[serde(skip_deserializing)]
+    pub children: RefCell<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Post {
     pub name: String,
@@ -36,11 +40,13 @@ pub struct Post {
     #[serde(default)]
     pub dl_url: String,
 
-    #[serde(skip)]
+    #[serde(skip_deserializing)]
     pub body: String,
+    #[serde(skip_deserializing)]
+    pub children: RefCell<Vec<String>>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum PostTypes {
     Post(Post),
@@ -72,6 +78,12 @@ impl PostTypes {
         match self {
             PostTypes::Post(p) => &p.parents,
             PostTypes::Category(c) => &c.parents,
+        }
+    }
+    pub fn set_children_names(&self, children: Vec<String>) {
+        match self {
+            PostTypes::Post(p) => p.children.borrow_mut().extend(children),
+            PostTypes::Category(c) => c.children.borrow_mut().extend(children),
         }
     }
 }

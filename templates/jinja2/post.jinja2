@@ -1,30 +1,21 @@
+{% import "macros.jinja2" as macros %}
 <html>
-<link rel="stylesheet" type="text/css" href="/css/game.css">
-<title>{{ name }}</title>
+<link rel="stylesheet" type="text/css" href="/css/post.css">
+<title>{{ post.name }}</title>
 </html>
 <body>
-<div class="wrapper">
+<div class="post_wrapper">
     <div class="box url">
-        <a id="siteurl" href="/">redsys.pw</a>/<a id="path", href="{{ name | urlencode }}.html">{{ name }}</a> <!-- PATH TO FILE, IF JS -->
+        <a id="siteurl" href="/">redsys.pw</a>/<a id="path", href="{{ post.name | urlencode }}.html">{{ post.name }}</a> <!-- PATH TO FILE, IF JS -->
     </div>
     <div class="box blank"></div>
-    <div class="box title">
-        <div class="left">{{ name }}</div>{% if post.year %}
-        <div class="right">[{{ year }}]</div>{% endif %}</div>
-    <div class="box image"><img src="{{ image }}"></div>
-    <div class="box tags">
-        <ul style="list-style-type: none;">
-            {% for child in children %}
-                <li ><a class="child_url" href="{{ name | urlencode }}/{{ child | urlencode }}.html">/{{ child }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
+    {{macros::post_header(post=post)}}
     <div class="box body">
-        {{ body | parsemd | safe }}
+        {{ post.body | parsemd | safe }}
     </div>
     <div class="box link">
         <div class="link url">
-            <a href={{ dlurl }}>{{ dlurl }}</a>
+            <a href={{ post.dl_url }}>{{ post.dl_url }}</a>
         </div>
         <div class="link blank"></div>
     </div>
@@ -62,8 +53,7 @@ function update_path(){
         sitenode.parentNode.insertBefore(a, sitenode.nextSibling);
     }
 }
-// TODO: each component of the box url should be a link to that page
-// has to be done dynamically, based on the document url. (otherwise we'd need unique pages instead of symlinks)
+
 update_cyclical_children();
 update_path();
 </script>

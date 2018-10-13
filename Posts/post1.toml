@@ -1,3 +1,0 @@
-type = "Post"
-name = 'post1'
-parents = ["catA", "catB", "Omega"]

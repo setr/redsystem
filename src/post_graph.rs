@@ -2,7 +2,7 @@ use errors::GraphError;
 use petgraph;
 use petgraph::graph::NodeIndex;
 use petgraph::visit::{EdgeRef, NodeIndexable};
-use posts::PostTypes;
+use posts::{Category, Post, PostTypes};
 use std::collections::HashMap;
 #[derive(Debug)]
 pub enum PostNode<'a> {
@@ -49,11 +49,38 @@ impl<'a> Graph<'a> {
             Err(errors)
         }
     }
-    pub fn get_children(self: &Self, post: &'a PostTypes) -> Vec<String> {
+    //TODO: Add sorting on names.
+    pub fn get_child_cats(self: &Self, post: &'a PostTypes) -> Vec<&Category> {
+        let idx = self.name_map[post.name()];
+        self.graph
+            .neighbors(idx)
+            .map(|idx| &self.graph[idx])
+            .map(|node| match node {
+                PostNode::Node(PostTypes::Category(c)) => Some(c),
+                _ => None,
+            }).filter(Option::is_some)
+            .map(Option::unwrap)
+            .collect()
+    }
+    pub fn get_child_posts(self: &Self, post: &'a PostTypes) -> Vec<&Post> {
+        let idx = self.name_map[post.name()];
+
+        self.graph
+            .neighbors(idx)
+            .map(|idx| &self.graph[idx])
+            .map(|node| match node {
+                PostNode::Node(PostTypes::Post(p)) => Some(p),
+                _ => None,
+            }).filter(Option::is_some)
+            .map(Option::unwrap)
+            .collect()
+    }
+
+    pub fn get_children_names(self: &Self, post: &'a PostTypes) -> Vec<String> {
         // now do the inverse; read the defined relationships and determine the child-relationship
         // which we'll use for the post's links.
 
-        let idx = self.name_map[&post.name()];
+        let idx = self.name_map[post.name()];
         self.graph
             .neighbors(idx)
             .map(|s| self.ix_to_name(s).to_string())
@@ -94,16 +121,11 @@ impl<'a> Graph<'a> {
         }
     }
     fn ixs_to_name(self: &Self, ixs: &[NodeIndex]) -> Vec<&str> {
-        ixs.into_iter().map(|&n| self.ix_to_name(n)).collect()
+        ixs.iter().map(|&n| self.ix_to_name(n)).collect()
     }
 
     pub fn find_all_paths(self: &Self) -> Vec<(&str, Vec<&str>)> {
-        let mut all_routes: Vec<_> = self
-            .graph
-            .neighbors(self.root)
-            .into_iter()
-            .map(|nx| vec![nx])
-            .collect();
+        let mut all_routes: Vec<_> = self.graph.neighbors(self.root).map(|nx| vec![nx]).collect();
 
         for nx in self.graph.neighbors(self.root) {
             let mut routes = vec![];
@@ -113,7 +135,7 @@ impl<'a> Graph<'a> {
 
         // (post, route_to_it)
         all_routes
-            .into_iter()
+            .iter()
             .map(|r| {
                 (
                     self.ix_to_name(r[r.len() - 1]),
