@@ -49,10 +49,12 @@ impl<'a> Graph<'a> {
             Err(errors)
         }
     }
+
     //TODO: Add sorting on names.
     pub fn get_child_cats(self: &Self, post: &'a PostTypes) -> Vec<&Category> {
         let idx = self.name_map[post.name()];
-        self.graph
+        let mut out: Vec<_> = self
+            .graph
             .neighbors(idx)
             .map(|idx| &self.graph[idx])
             .map(|node| match node {
@@ -60,12 +62,16 @@ impl<'a> Graph<'a> {
                 _ => None,
             }).filter(Option::is_some)
             .map(Option::unwrap)
-            .collect()
+            .collect();
+        out.sort_unstable_by(|&c1, &c2| c1.name.cmp(&c2.name));
+        out
     }
+
     pub fn get_child_posts(self: &Self, post: &'a PostTypes) -> Vec<&Post> {
         let idx = self.name_map[post.name()];
 
-        self.graph
+        let mut out: Vec<_> = self
+            .graph
             .neighbors(idx)
             .map(|idx| &self.graph[idx])
             .map(|node| match node {
@@ -73,7 +79,9 @@ impl<'a> Graph<'a> {
                 _ => None,
             }).filter(Option::is_some)
             .map(Option::unwrap)
-            .collect()
+            .collect();
+        out.sort_unstable_by(|&p1, &p2| p1.name.cmp(&p2.name));
+        out
     }
 
     pub fn get_children_names(self: &Self, post: &'a PostTypes) -> Vec<String> {
@@ -81,20 +89,27 @@ impl<'a> Graph<'a> {
         // which we'll use for the post's links.
 
         let idx = self.name_map[post.name()];
-        self.graph
+        let mut out: Vec<_> = self
+            .graph
             .neighbors(idx)
             .map(|s| self.ix_to_name(s).to_string())
-            .collect()
+            .collect();
+        out.sort_unstable();
+        out
     }
+
     pub fn get_parent_names(self: &Self, post: &'a PostTypes) -> Vec<String> {
         // now do the inverse; read the defined relationships and determine the child-relationship
         // which we'll use for the post's links.
 
         let idx = self.name_map[post.name()];
-        self.graph
+        let mut out: Vec<_> = self
+            .graph
             .neighbors_directed(idx, petgraph::Direction::Incoming)
             .map(|s| self.ix_to_name(s).to_string())
-            .collect()
+            .collect();
+        out.sort_unstable();
+        out
     }
 
     pub fn add_node(self: &mut Self, item: &'a PostTypes) -> petgraph::graph::NodeIndex {
@@ -124,12 +139,14 @@ impl<'a> Graph<'a> {
             }
         }
     }
+
     fn ix_to_name(self: &Self, ix: NodeIndex) -> &str {
         match self.graph[ix] {
             PostNode::Node(n) => n.name(),
             PostNode::Root() => "Root",
         }
     }
+
     fn ixs_to_name(self: &Self, ixs: &[NodeIndex]) -> Vec<&str> {
         ixs.iter().map(|&n| self.ix_to_name(n)).collect()
     }
