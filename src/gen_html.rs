@@ -39,7 +39,7 @@ fn gen_post(tera: &Tera, post: &PostTypes, graph: &Graph) -> Result<PostHtml, te
     let html = match post {
         PostTypes::Post(p) => {
             ctx.insert("post", &p);
-            ctx.insert("children", &*p.children.borrow());
+            ctx.insert("children", &p.children);
             tera.render("post.jinja2", &ctx)
         }
         PostTypes::Category(ref c) => {
