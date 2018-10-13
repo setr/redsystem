@@ -1,6 +1,9 @@
 # redsystem
 Static blog generator with cyclical digraph structure
 
+Any blog post/category can be a child of any post/category. Multiple paths can lead to the same post, so to statically record the path taken in the URL, symlinks are generated to keep the path. To handle a cycle, we retreat back up the path to previous instance of the post. 
+
+Since the individual post doesn't actually know where they are in the path (since we're just following symlinks to the same single post), JS is required to support cycle-detection, and update the url. If JS is turned off, the link pointing to a cycle will instead 404. [It might be possible to do this statically.](https://github.com/setr/redsystem/issues/5)
 ```
 test% redsystem -h
 redsystem 0.1.0
@@ -68,7 +71,9 @@ or
     [Optional] aliases: [String]
         Alternative names that this post can be referenced by. Must be unique across all posts.
 ```
-Note that the template used, and the required information for it, is determined by the `type`. Currently `type` can be either "Post" or "Category", where Post denotes something (ie a game), while Category denotes a group of things. Note that they can reference each other (using the parents field) arbitrarily; that is, a post can be the parent of many categories, and a category can be the parent of many posts, or category-\>category, or whatever combination you wish.
+Note that the template used, and the required information for it, is determined by the `type`. Currently `type` can be either "Post" or "Category", where Post denotes something (ie a game), while Category denotes a group of things. 
+
+Note that they can reference each other (using the parents field) arbitrarily; that is, a post can be the parent of many categories, and a category can be the parent of many posts, or category-\>category, or whatever combination you wish.
 
 ## Example Usage
 
