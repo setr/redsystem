@@ -1,4 +1,6 @@
-{% set name = cat.name %}
+{%import "macros.jinja2" as macros %}
+{% set name = joindir(d=cat.dirname, n=cat.name) %}
+
 <html>
 <meta charset="UTF-8">
 <link rel="stylesheet" type="text/css" href="/css/category.css">
@@ -7,7 +9,7 @@
 <body>
 <div class="cat_wrapper">
     <div class="box cat_url">
-        <a id="siteurl" href="/">redsys.pw</a>/<a id="path", href="{{ name | urlencode }}.html">{{ name }}</a> <!-- PATH TO FILE, IF JS -->
+        <a id="siteurl" href="/">redsys.pw</a><a id="path", href="{{ name | urlencode }}.html">/{{ name }}</a> <!-- PATH TO FILE, IF JS -->
     </div>
     <div class="box blank"></div>
     <div class="box items">
@@ -15,43 +17,16 @@
         {% for c in childcats %}
             <div class="childcat">
                 <div class="box cat_child_title">
-                    <a class="cat_child_url" href="{{ name | urlencode }}/{{ c.name | urlencode }}.html">/{{ c.name }}</a>
+                    <a class="cat_child_url" href="/{{ joindir(d=c.dirname, n=c.name) | urlencode }}.html">/{{ c.name }}</a>
                 </div>
             </div>
         {% endfor %}
         {% for post in childposts %} 
             <div class="post_wrapper">
-                <div class="box title">
-                        <div class="left"><a href="{{ name ~ '/' ~ post.name | urlencode }}.html">{{ post.name }}</a></div>{% if post.year %}
-                        <div class="right">[{{ post.year }}]</div>{% endif %}</div>
-                    <div class="box image"><img src="{{ post.image }}"></div>
-                    <div class="box tags">
-                        <ul style="list-style-type: none;">
-                        {% for other_parent in post.parent_names %}
-                            <li ><a class="parent_url" href="{{ name ~ '/' ~ post.name ~ '/' ~ other_parent | urlencode }}.html"><span class="uparrow">➤</span> /{{ other_parent }}</a></li>
-                        {% endfor %}
-                        {% for child in post.children %}
-                            <li ><a class="child_url" href="{{ name ~ '/' ~ post.name ~ '/' ~ child | urlencode }}.html">/{{ child }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                {{ macros::post_header(post=post) }}
             </div>
         {% endfor %}
     </div>
 </div>
 </body>
-<script type="text/javascript">
-function update_path(){
-    let path = window.location.pathname.split('/').slice(1, -1);
-    var sitenode = document.getElementById('siteurl');
-    for (var i = path.length; i > 0; i--){
-        let a = document.createElement('a');
-        a.href = '/' + path.slice(0, i).join('/') + '.html';
-		console.log(i, path.slice(0,i));
-        a.text = decodeURI('/' + path[i-1]);
-        sitenode.parentNode.insertBefore(a, sitenode.nextSibling);
-    }
-}
-update_path();
-</script>
 </html>

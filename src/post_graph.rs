@@ -13,7 +13,7 @@ pub enum PostNode<'a> {
 pub struct Graph<'a> {
     root: petgraph::graph::NodeIndex,
     pub graph: petgraph::Graph<PostNode<'a>, usize>,
-    name_map: HashMap<&'a str, petgraph::graph::NodeIndex>,
+    name_map: HashMap<String, petgraph::graph::NodeIndex>,
 }
 
 impl<'a> Graph<'a> {
@@ -31,13 +31,15 @@ impl<'a> Graph<'a> {
     pub fn add_posts(self: &mut Self, items: &'a [PostTypes]) -> Result<(), Vec<GraphError>> {
         // Add the posts to the graph
         let mut errors: Vec<GraphError> = Vec::new();
+
         for item in items {
+            trace!("Adding post: {}", item.name());
             self.add_node(item);
         }
 
         // set the relationships based on stated parent relationship
         for item in items {
-            match self.add_edge(item.name(), item.parents()) {
+            match self.add_edge(&item.name(), &item.parents()) {
                 Ok(()) => (),
                 Err(x) => errors.push(x),
             }
@@ -52,7 +54,7 @@ impl<'a> Graph<'a> {
 
     //TODO: Add sorting on names.
     pub fn get_child_cats(self: &Self, post: &'a PostTypes) -> Vec<&Category> {
-        let idx = self.name_map[post.name()];
+        let idx = self.name_map[post.name().as_str()];
         let mut out: Vec<_> = self
             .graph
             .neighbors(idx)
@@ -68,7 +70,7 @@ impl<'a> Graph<'a> {
     }
 
     pub fn get_child_posts(self: &Self, post: &'a PostTypes) -> Vec<&Post> {
-        let idx = self.name_map[post.name()];
+        let idx = self.name_map[post.name().as_str()];
 
         let mut out: Vec<_> = self
             .graph
@@ -88,7 +90,7 @@ impl<'a> Graph<'a> {
         // now do the inverse; read the defined relationships and determine the child-relationship
         // which we'll use for the post's links.
 
-        let idx = self.name_map[post.name()];
+        let idx = self.name_map[&post.name()];
         let mut out: Vec<_> = self
             .graph
             .neighbors(idx)
@@ -102,7 +104,7 @@ impl<'a> Graph<'a> {
         // now do the inverse; read the defined relationships and determine the child-relationship
         // which we'll use for the post's links.
 
-        let idx = self.name_map[post.name()];
+        let idx = self.name_map[&post.name()];
         let mut out: Vec<_> = self
             .graph
             .neighbors_directed(idx, petgraph::Direction::Incoming)
@@ -128,6 +130,8 @@ impl<'a> Graph<'a> {
         all_routes: &mut Vec<Vec<NodeIndex>>,
     ) {
         if cur_route.contains(&nx) {
+            cur_route.push(nx); // keep the duplicate; we'll use it to produce the symlink cycle
+            info!("cur-route: {:?}", cur_route);
             return;
         }
         cur_route.push(nx);
@@ -140,18 +144,21 @@ impl<'a> Graph<'a> {
         }
     }
 
-    fn ix_to_name(self: &Self, ix: NodeIndex) -> &str {
+    fn ix_to_name(self: &Self, ix: NodeIndex) -> String {
         match self.graph[ix] {
             PostNode::Node(n) => n.name(),
-            PostNode::Root() => "Root",
+            PostNode::Root() => "Root".to_string(),
         }
     }
 
-    fn ixs_to_name(self: &Self, ixs: &[NodeIndex]) -> Vec<&str> {
+    fn ixs_to_name(self: &Self, ixs: &[NodeIndex]) -> Vec<String> {
         ixs.iter().map(|&n| self.ix_to_name(n)).collect()
     }
 
-    pub fn find_all_paths(self: &Self) -> Vec<(&str, Vec<&str>)> {
+    // the last item [MAY] be a duplicate as some other element in the path
+    // if it is, then it'll become a symlink-cycle.
+    // The optional element of the route is the index of the preceding element.
+    pub fn find_all_paths(self: &Self) -> Vec<(String, Vec<String>, Option<usize>)> {
         let mut all_routes: Vec<_> = self.graph.neighbors(self.root).map(|nx| vec![nx]).collect();
 
         for nx in self.graph.neighbors(self.root) {
@@ -160,13 +167,18 @@ impl<'a> Graph<'a> {
             all_routes.append(&mut routes);
         }
 
-        // (post, route_to_it)
+        // (post, route_to_it, (index_of_duplicate))
         all_routes
             .iter()
+            .inspect(|r| info!("route: {:?}", r))
             .map(|r| {
+                let end = r.len() - 1;
                 (
-                    self.ix_to_name(r[r.len() - 1]),
-                    self.ixs_to_name(&r[0..r.len() - 1]),
+                    self.ix_to_name(r[end]),
+                    self.ixs_to_name(&r[0..end]),
+                    r.iter()
+                        .enumerate()
+                        .position(|(i, &ix)| i != end && ix == r[end]),
                 )
             }).collect()
     }
@@ -183,10 +195,13 @@ impl<'a> Graph<'a> {
         }
         let map = &mut self.name_map;
         let graph = &mut self.graph;
+        let root = &self.root;
         let (parents, errors): (Vec<_>, Vec<_>) = parentlist
             .iter()
-            .map(|p| map.get(&p as &str))
-            .partition(Option::is_some);
+            .map(|p| match p.as_str() {
+                "INDEX" => Some(root),
+                s => map.get(s),
+            }).partition(Option::is_some);
 
         if !errors.is_empty() {
             let missing_parents: Vec<_> = errors

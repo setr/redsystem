@@ -90,20 +90,20 @@ fn argparse<'a>() -> ArgMatches<'a> {
 }
 fn unwraps_or_exits<T, E: Display + Debug>(t: Result<Vec<T>, Vec<E>>) -> Vec<T> {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{:?}", e));
+        errors.iter().for_each(|e| error!("{}", e));
         std::process::exit(1)
     })
 }
 fn unwrap_or_exits<T, E: Display + Debug>(t: Result<T, Vec<E>>) -> T {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{:?}", e));
+        errors.iter().for_each(|e| error!("{}", e));
         std::process::exit(1)
     })
 }
 
 fn unwrap_or_exit<T, E: Display + Debug>(t: Result<T, E>) -> T {
     t.unwrap_or_else(|e| {
-        error!("{:?}", e);
+        error!("{}", e);
         std::process::exit(1)
     })
 }
@@ -127,7 +127,7 @@ fn copy_dir(src: &PathBuf, target: &PathBuf) -> std::io::Result<()> {
     Ok(())
 }
 
-fn create_www(wwwdir: &PathBuf, srcdir: &PathBuf, cssdir: &PathBuf, force_del: bool) {
+fn create_www(wwwdir: &PathBuf, cssdir: &PathBuf, force_del: bool) {
     if wwwdir.exists() && wwwdir.is_dir() {
         if force_del || Confirmation::new(format!("Delete {:?}?", wwwdir).as_str())
             .interact()
@@ -140,8 +140,6 @@ fn create_www(wwwdir: &PathBuf, srcdir: &PathBuf, cssdir: &PathBuf, force_del: b
             std::process::exit(1);
         }
     }
-    debug!("Creating directory {:?}", srcdir);
-    unwrap_or_exit(create_dir_all(&srcdir));
     trace!("Moving {:?} to {:?}", cssdir, &wwwdir.join("css"));
     unwrap_or_exit(copy_dir(&cssdir, &wwwdir.join("css")));
 }
@@ -157,7 +155,6 @@ fn main() {
     let args = argparse();
     let getval = |x| args.value_of(x).unwrap();
     let wwwdir = Path::new(getval("outdir")).to_path_buf();
-    let srcdir = wwwdir.join("src");
     let templatedir = Path::new(getval("templatedir"));
     let cssdir = templatedir.join("css");
     let postdir = Path::new(getval("postdir"));
@@ -188,15 +185,16 @@ fn main() {
         debug!("Fetching templates from {:?}", templateglob);
         let tera = get_templates(&templateglob);
 
-        create_www(&wwwdir, &srcdir, &cssdir, args.is_present("delete_outdir"));
+        create_www(&wwwdir, &cssdir, args.is_present("delete_outdir"));
         // struct -> html
         info!("Generating html..");
         let post_templates = unwraps_or_exits(gen_posts_html(&tera, &posts, &graph));
         // generate the actual files and symlinks
         debug!("Writing posts");
-        unwrap_or_exit(create_posts(&srcdir, &post_templates));
-        debug!("Writing symlinks");
-        unwrap_or_exit(create_symlinks(&wwwdir, &srcdir, &graph));
+        unwrap_or_exit(create_posts(&wwwdir, &post_templates));
+        // debug!("Writing symlinks");
+        // unwrap_or_exit(create_symlinks(&wwwdir, &srcdir, &post_templates));
+        // unwrap_or_exit(create_symlinks(&wwwdir, &srcdir, &graph));
         info!("Finished");
     }
     if args.is_present("run_server") {

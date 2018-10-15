@@ -17,6 +17,8 @@ pub struct Category {
     pub parents: Vec<String>,
     #[serde(default)]
     pub aliases: Vec<String>,
+    #[serde(default)]
+    pub dirname: String, // associated directory
     #[serde(skip_deserializing)]
     pub body: String,
     #[serde(skip_deserializing)]
@@ -35,6 +37,8 @@ pub struct Post {
     pub aliases: Vec<String>,
     #[serde(default)]
     pub description: String,
+    #[serde(default)]
+    pub dirname: String, // associated directory
     #[serde(default)]
     pub image: String,
     #[serde(default)]
@@ -58,24 +62,39 @@ pub enum PostTypes {
 }
 
 impl PostTypes {
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> String {
         match self {
-            PostTypes::Post(p) => &p.name,
-            PostTypes::Category(c) => &c.name,
+            PostTypes::Post(p) => self.withdir(&p.name),
+            PostTypes::Category(c) => self.withdir(&c.name),
         }
     }
-    pub fn names(&self) -> Vec<&str> {
+
+    pub fn names(&self) -> Vec<String> {
         match self {
             PostTypes::Post(p) => {
-                let mut names: Vec<&str> = p.aliases.iter().map(|s| s.as_ref()).collect();
-                names.push(&p.name);
+                let mut names: Vec<_> = p.aliases.iter().map(|s| self.withdir(s)).collect();
+                names.push(self.name());
                 names
             }
             PostTypes::Category(c) => {
-                let mut names: Vec<&str> = c.aliases.iter().map(|s| s.as_ref()).collect();
-                names.push(&c.name);
+                let mut names: Vec<_> = c.aliases.iter().map(|s| self.withdir(s)).collect();
+                names.push(self.name());
                 names
             }
+        }
+    }
+    fn get_dir(&self) -> &str {
+        match self {
+            PostTypes::Post(p) => &p.dirname,
+            PostTypes::Category(c) => &c.dirname,
+        }
+    }
+
+    fn withdir(&self, name: &str) -> String {
+        if self.get_dir().is_empty() {
+            name.to_string()
+        } else {
+            format!("{}/{}", self.get_dir(), name)
         }
     }
     pub fn parents(&self) -> &Vec<String> {
