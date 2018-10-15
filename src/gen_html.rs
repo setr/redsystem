@@ -8,6 +8,7 @@ use std;
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
 use std::io::prelude::Write;
+use std::iter;
 use std::path::{Path, PathBuf};
 use symlink::symlink_file;
 use tera;
@@ -59,17 +60,36 @@ fn gen_post(tera: &Tera, post: &PostTypes, graph: &Graph) -> Result<PostHtml, te
             ctx.insert("children", &p.children);
             tera.render("post.jinja2", &ctx)
         }
-        PostTypes::Category(ref c) => {
+        PostTypes::Category(c) => {
             //ctx.insert("category", c);
             ctx.insert("cat", c);
-            ctx.insert("childcats", &graph.get_child_cats(post));
-            ctx.insert("childposts", &graph.get_child_posts(post));
+            ctx.insert(
+                "childcats",
+                &graph.get_child_cats(&graph.getidx(&post.name())),
+            );
+            ctx.insert(
+                "childposts",
+                &graph.get_child_posts(&graph.getidx(&post.name())),
+            );
             tera.render("category.jinja2", &ctx)
         }
     };
     match html {
         Ok(s) => Ok(PostHtml {
-            filename: format!("{}.html", post.name().to_string()),
+            filename: format!("{}.html", post.name()),
+            html: s,
+        }),
+        Err(e) => Err(e),
+    }
+}
+fn gen_root(tera: &Tera, graph: &Graph) -> Result<PostHtml, tera::Error> {
+    let mut ctx = Context::new();
+    ctx.insert("childcats", &graph.get_child_cats(&graph.root));
+    ctx.insert("childposts", &graph.get_child_posts(&graph.root));
+    let html = tera.render("index.jinja2", &ctx);
+    match html {
+        Ok(s) => Ok(PostHtml {
+            filename: "index.html".to_string(),
             html: s,
         }),
         Err(e) => Err(e),
@@ -81,9 +101,11 @@ pub fn gen_posts_html(
     graph: &Graph,
 ) -> Result<Vec<PostHtml>, Vec<tera::Error>> {
     let (posts, errors): (Vec<_>, Vec<_>) = posts
-        .into_iter()
+        .iter()
         .map(|p| gen_post(tera, p, graph))
+        .chain(iter::once(gen_root(tera, graph))) // inject the index node
         .partition(Result::is_ok);
+
     if errors.is_empty() {
         Ok(posts.into_iter().map(Result::unwrap).collect())
     } else {

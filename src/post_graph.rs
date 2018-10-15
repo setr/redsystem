@@ -11,7 +11,7 @@ pub enum PostNode<'a> {
 }
 #[derive(Default)]
 pub struct Graph<'a> {
-    root: petgraph::graph::NodeIndex,
+    pub root: petgraph::graph::NodeIndex,
     pub graph: petgraph::Graph<PostNode<'a>, usize>,
     name_map: HashMap<String, petgraph::graph::NodeIndex>,
 }
@@ -52,12 +52,15 @@ impl<'a> Graph<'a> {
         }
     }
 
+    pub fn getidx(self: &Self, postname: &str) -> &NodeIndex {
+        &self.name_map[postname]
+    }
+
     //TODO: Add sorting on names.
-    pub fn get_child_cats(self: &Self, post: &'a PostTypes) -> Vec<&Category> {
-        let idx = self.name_map[post.name().as_str()];
+    pub fn get_child_cats(self: &Self, idx: &NodeIndex) -> Vec<&Category> {
         let mut out: Vec<_> = self
             .graph
-            .neighbors(idx)
+            .neighbors(*idx)
             .map(|idx| &self.graph[idx])
             .map(|node| match node {
                 PostNode::Node(PostTypes::Category(c)) => Some(c),
@@ -69,12 +72,10 @@ impl<'a> Graph<'a> {
         out
     }
 
-    pub fn get_child_posts(self: &Self, post: &'a PostTypes) -> Vec<&Post> {
-        let idx = self.name_map[post.name().as_str()];
-
+    pub fn get_child_posts(self: &Self, idx: &NodeIndex) -> Vec<&Post> {
         let mut out: Vec<_> = self
             .graph
-            .neighbors(idx)
+            .neighbors(*idx)
             .map(|idx| &self.graph[idx])
             .map(|node| match node {
                 PostNode::Node(PostTypes::Post(p)) => Some(p),

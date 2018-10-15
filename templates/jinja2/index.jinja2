@@ -1,29 +1,31 @@
-<html>
-<link rel="stylesheet" type="text/css" href="/css/root.css">
-<title>redsys.pw</title>
-</html>
+{%import "macros.jinja2" as macros %}
 
+<html>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+<title>index.html</title>
+</html>
 <body>
-<div class="wrapper">
-    <div class="box url">
-        <a href="./">redsys.pw</a>
+<div class="cat_wrapper">
+    <div class="box cat_url">
+        <a id="siteurl" href="/">redsys.pw</a>
     </div>
     <div class="box blank"></div>
-    <div class="box title">
-        <div class="left">redsys.pw</div>
-        <div class="box image"><img src="{{ image }}"></div>
-        <div class="box body">
-            <ul style="list-style-type: none;">
-                {% for p in posts %}
-                    <li><a href="{{ p.name }}.html">/{{ p.name }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="box link">
-            <div class="link url">
-
+    <div class="box items">
+        <!-- For every child, we'll simply need a link to the next category. Notably, categories come before posts. -->
+        {% for c in childcats %}
+            <div class="childcat">
+                <div class="box cat_child_title">
+                    <a class="cat_child_url" href="/{{ joindir(d=c.dirname, n=c.name) | urlencode }}.html">/{{ c.name }}</a>
+                </div>
             </div>
-            <div class="link blank"></div>
-        </div>
+        {% endfor %}
+        {% for post in childposts %} 
+            <div class="post_wrapper">
+                {{ macros::post_header(post=post) }}
+            </div>
+        {% endfor %}
     </div>
+</div>
 </body>
+</html>

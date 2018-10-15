@@ -90,20 +90,20 @@ fn argparse<'a>() -> ArgMatches<'a> {
 }
 fn unwraps_or_exits<T, E: Display + Debug>(t: Result<Vec<T>, Vec<E>>) -> Vec<T> {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{}", e));
+        errors.iter().for_each(|e| error!("{:?}", e));
         std::process::exit(1)
     })
 }
 fn unwrap_or_exits<T, E: Display + Debug>(t: Result<T, Vec<E>>) -> T {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{}", e));
+        errors.iter().for_each(|e| error!("{:?}", e));
         std::process::exit(1)
     })
 }
 
 fn unwrap_or_exit<T, E: Display + Debug>(t: Result<T, E>) -> T {
     t.unwrap_or_else(|e| {
-        error!("{}", e);
+        error!("{:?}", e);
         std::process::exit(1)
     })
 }

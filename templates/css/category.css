@@ -43,10 +43,18 @@ a {
 .childcat:first-child {
   margin-top: 2em;
 }
+.childcat {
+  margin-top: 0.5em;
+}
 div.box.image > img {
   max-width:100%;
 }
-
+.post-sidebar {
+  list-style-type: none;
+}
+.post-sidebar > li {
+  font-size: .8em;
+}
 .box.tags {
   grid-area: tags;
 }
@@ -84,7 +92,7 @@ div.box.image > img {
   padding: .5% 1% .5% 1%;
 }
 .box.cat_url{
-  font-size:200%;
+  font-size:2em;
 }
 
 .link.url {
@@ -123,5 +131,5 @@ div.box.image > img {
 
 .box {
   color: black;
-  font-size: 125%
+  font-size: 1.25em;
 }

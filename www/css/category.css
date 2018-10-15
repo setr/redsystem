@@ -43,10 +43,18 @@ a {
 .childcat:first-child {
   margin-top: 2em;
 }
+.childcat {
+  margin-top: 0.5em;
+}
 div.box.image > img {
   max-width:100%;
 }
-
+.post-sidebar {
+  list-style-type: none;
+}
+.post-sidebar > li {
+  font-size: 100%
+}
 .box.tags {
   grid-area: tags;
 }

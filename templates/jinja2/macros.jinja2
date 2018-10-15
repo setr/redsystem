@@ -7,7 +7,7 @@
     </div>
         <div class="box image"><img src="{{ post.image }}"></div>
         <div class="box tags">
-            <ul style="list-style-type: none;">
+            <ul class="post-sidebar">
             {% for parent in post.parent_names %}
                 <li ><a class="parent_url" href="/{{ parent | urlencode }}.html"><span class="uparrow">➤</span> /{{ parent }}</a></li>
             {% endfor %}
