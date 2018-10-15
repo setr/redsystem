@@ -140,6 +140,7 @@ fn create_www(wwwdir: &PathBuf, cssdir: &PathBuf, force_del: bool) {
             std::process::exit(1);
         }
     }
+    unwrap_or_exit(create_dir(&wwwdir));
     trace!("Moving {:?} to {:?}", cssdir, &wwwdir.join("css"));
     unwrap_or_exit(copy_dir(&cssdir, &wwwdir.join("css")));
 }
