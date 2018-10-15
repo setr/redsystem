@@ -1,9 +1,8 @@
 # redsystem
-Static blog generator with cyclical digraph structure
+Static blog generator with a digraph structure (ie cycles allowed)
 
-Any blog post/category can be a child of any post/category. Multiple paths can lead to the same post, so to statically record the path taken in the URL, symlinks are generated to keep the path. To handle a cycle, we retreat back up the path to previous instance of the post. 
+Any blog post/category can be a child of any post/category. Multiple paths can lead to the same post. The path taken is **not** recorded anywhere. JS is currently not used, and at no point should ever be required.
 
-Since the individual post doesn't actually know where they are in the path (since we're just following symlinks to the same single post), JS is required to support cycle-detection, and update the url. If JS is turned off, the link pointing to a cycle will instead 404. [It might be possible to do this statically.](https://github.com/setr/redsystem/issues/5)
 ```
 test% redsystem -h
 redsystem 0.1.0
@@ -42,17 +41,22 @@ The dividing line `---` is required if body text exists (otherwise redsystem wil
 
 Body text is parsed as standard markdown.
 
-
+Currently Categories can have body text, but its html template doesn't do anything with it.
 ```
 Metadata:
     [Required] type: "Post"
         Determines html template used, and possible metadata fields.
     [Required] name: String
         Canonical name of the document. Must be unique across all posts.
+    [Optional] dirname: String
+        The directory from root which will contain this. Acts as a namespace, and appears in the URL when visiting the page. ie "Artists" or "Artists/Tokyo". 
+        This is the canonical root directory of a node.
+    [Optional] aliases: [String]
+        Alternative names that this post can be referenced by. Must be unique across all posts in the `dirname` namespace.
     [Optional] parents: [String]
         List of parent nodes, referenced by name/alias. Duplicate references to the same parent will be ignored.
-    [Optional] aliases: [String]
-        Alternative names that this post can be referenced by. Must be unique across all posts.
+        If no parents are listed, or the parent "INDEX" exists, it will be attached to the implicit index node (which produces index.html).
+        Parents must be listed with the full path. ie if `Star Control` has alias `sc` and has dirname `Category`, then it be referenced as a parent with "Category/sc" or "Category/Star Control"
     [Optional] description: String
         Short one-line description of the post
     [Optional] image: String
@@ -66,31 +70,34 @@ or
         Determines html template used, and possible metadata fields.
     [Required] name: String
         Canonical name of the document. Must be unique across all posts.
+    [Optional] dirname: String
+        The directory from root which will contain this. Acts as a namespace, and appears in the URL when visiting the page. ie "Artists" or "Artists/Tokyo". 
+        This is the canonical root directory of a node.
+    [Optional] aliases: [String]
+        Alternative names that this post can be referenced by. Must be unique across all posts in the `dirname` namespace.
     [Optional] parents: [String]
         List of parent nodes, referenced by name/alias. Duplicate references to the same parent will be ignored.
-    [Optional] aliases: [String]
-        Alternative names that this post can be referenced by. Must be unique across all posts.
+        If no parents are listed, or the parent "INDEX" exists, it will be attached to the implicit index node (which produces index.html).
+        Parents must be listed with the full path. ie if `Star Control` has alias `sc` and has dirname `Category`, then it be referenced as a parent with "Category/sc" or "Category/Star Control"
 ```
 Note that the template used, and the required information for it, is determined by the `type`. Currently `type` can be either "Post" or "Category", where Post denotes something (ie a game), while Category denotes a group of things. 
 
-Note that they can reference each other (using the parents field) arbitrarily; that is, a post can be the parent of many categories, and a category can be the parent of many posts, or category-\>category, or whatever combination you wish.
+Note that they can reference each other (using the parents field) arbitrarily; that is, a post can be the parent of many categories, and a category can be the parent of many posts, or category-\>category, or whatever combination you wish. The only special node is the index (root) node.
 
-## Example Usage
+## Examples
 
 ### Example post
 ```
-type="Post"
-name = "Omega Boost"
-aliases=["Omega", "omega"]
-year = "1993"
-description = "Omega Boost"
-image = "https://gamefaqs.akamaized.net/box/8/6/6/5866_front.jpg"
-dl_url = "url.org/#64zx79sYfq2TD82vTexI19DKua4Ns8YXMHBYWkrsCMpUZRaj1QLAUjKxIApEE1cQGt8wviSh8pH58N623HviJiFq7T4oFlOZCMov"
-parents = ["misc studio", "shoji kawamori", "cyber", "mecha"]
+type = "Post"
+name = 'Star Control: Famous Battles of the Ur-Quan Conflict, Volume IV'
+aliases = ["Star Control"]
+image = "http://4.bp.blogspot.com/-uJiRZMgyuQ0/UQVwZc-XwYI/AAAAAAAAArI/N7rhTIeb2-Y/s1600/36313-star-control-amiga-screenshot-the-syreen-penetrators-1.gif"
+year = "1990"
+parents = ["SciFi"]
 ---
-Lorem ipsum dolor sit amet, magna iusto senserit vel in, ignota eirmod officiis cu quo, posidonium necessitatibus no eum. Cu mea diceret mediocrem dissentias, sed partem recusabo invenire ut. Ex adipisci tacimates pri. Vide nemore molestie ad quo. Mea quidam regione antiopam te. Eius iracundia eam ad, putent nominavi ex eos.
+**Star Control: Famous Battles of the Ur-Quan Conflict Volume IV** was developed by Fred Ford and Paul Reiche III. It was released for the PC in 1990 and (in a somewhat cut-down form, and called simply Star Control) for the Commodore 64 in 1991 by Accolade. 
 
-Lorem ipsum dolor sit amet, magna iusto senserit vel in, ignota eirmod officiis cu quo, posidonium necessitatibus no eum. Cu mea diceret mediocrem dissentias, sed partem recusabo invenire ut. Ex adipisci tacimates pri. Vide nemore molestie ad quo. Mea quidam regione antiopam te. Eius iracundia eam ad, putent nominavi ex eos.
+A port for the Sega Genesis was released by Ballistic in that same year. The DOS version is available from Good Old Games.
 ```
 ### Another Example post
 ```
@@ -99,7 +106,7 @@ name = 'Star Control II - The Urquan Masters'
 aliases = ["Star Control II", "Star Control 2"]
 image = "https://draginol.stardock.net/images2018/The-art-of-Star-Control_C786/image.png"
 year = "1992"
-parents = ["SciFi"]
+parents = ["SciFi", "Star Control"]
 ---
 **Star Control II: The Ur-Quan Masters** is a science fiction video game, a sequel to Star Control. It was developed by Toys for Bob and originally published by Accolade in 1992 for MS-DOS. 
 

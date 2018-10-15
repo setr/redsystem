@@ -30,6 +30,23 @@ pub fn get_templates(templateglob: &str) -> Tera {
         html::push_html(&mut html_buf, parser);
         Ok(to_value(html_buf).unwrap())
     });
+
+    tera.register_function(
+        "joindir",
+        Box::new(move |args| -> tera::Result<tera::Value> {
+            match (args.get("d"), args.get("n")) {
+                (Some(dirname), Some(name)) => match (
+                    from_value::<String>(dirname.clone()),
+                    from_value::<String>(name.clone()),
+                ) {
+                    (Ok(ref d), Ok(ref n)) if d == "" => Ok(to_value(n).unwrap()),
+                    (Ok(ref d), Ok(ref n)) => Ok(to_value(format!("{}/{}", d, n)).unwrap()),
+                    _ => Err("oops".into()),
+                },
+                _ => Err("oops".into()),
+            }
+        }),
+    );
     tera
 }
 
@@ -79,8 +96,20 @@ pub fn create_posts(srcdir: &Path, posts: &[PostHtml]) -> Result<(), IOError> {
     posts
         .iter()
         .map(|post| {
-            let filepath = srcdir.join(post.filename.clone());
+            let filepath = srcdir.join(&post.filename);
+            trace!("Creating post -- file {:?}", filepath);
+
+            // create directories for the post as necessary
+            if let Some(dirs) = filepath.parent() {
+                if let Err(e) = create_dir_all(dirs) {
+                    if e.kind() != std::io::ErrorKind::AlreadyExists {
+                        return Err(e).context(dirs)?;
+                    }
+                }
+            }
+
             let mut output = File::create(&filepath).context(&filepath)?;
+
             output
                 .write_all((&post.html).as_bytes())
                 .context(&filepath)?;
@@ -88,38 +117,55 @@ pub fn create_posts(srcdir: &Path, posts: &[PostHtml]) -> Result<(), IOError> {
             Ok(())
         }).collect()
 }
-pub fn create_symlinks(wwwdir: &Path, srcdir: &Path, graph: &Graph) -> Result<(), IOError> {
-    // generate symlinks and directories to each post as necessary
-    let paths = graph.find_all_paths();
-    debug!("Creating {} symlinks", paths.len());
-    for (target, path) in paths {
-        let targetname = format!("{}.html", target);
-        let targetdir: PathBuf = wwwdir.join(path.iter().collect::<PathBuf>());
-        let targetfile = targetdir.join(&targetname);
-        let srcfile = path
-            .iter()
-            .map(|_| "../")
-            .collect::<PathBuf>()
-            .join("../")
-            .join(&srcdir)
-            .join(&targetname);
-
-        // then create the symlink: targetpath -> sourcefile
-        trace!(
-            "Creating symlink -- file: {:?} -> original:{:?}",
-            targetfile,
-            srcfile
-        );
-        //let srcfile = srcdir.join(target);
-
-        // now we need to create the relevant directories (targetdir)
-        // ignore any pre-existing directories; overlapping creation is fine.
-        if let Err(e) = create_dir_all(&targetdir) {
-            if e.kind() != std::io::ErrorKind::AlreadyExists {
-                return Err(e).context(&targetdir)?;
-            }
-        }
-        symlink_file(&srcfile, &targetfile).context(&srcfile)?;
-    }
-    Ok(())
+pub fn create_symlinks(wwwdir: &Path, srcdir: &Path, posts: &[PostHtml]) -> Result<(), IOError> {
+    posts
+        .iter()
+        .map(|post| {
+            let symfile = wwwdir.join(&post.filename);
+            let srcfile = Path::new("../").join(srcdir).join(&post.filename);
+            symlink_file(&srcfile, &symfile).context(&srcfile)?;
+            Ok(())
+        }).collect()
+    //Ok(())
 }
+// pub fn create_symlinks(wwwdir: &Path, srcdir: &Path, graph: &Graph) -> Result<(), IOError> {
+//     // generate symlinks and directories to each post as necessary
+//     //
+//     let paths = graph.find_all_paths();
+//     debug!("Creating {} symlinks", paths.len());
+//     for (target, path, m_dupix) in paths {
+//         info!("{}, {:?}, {:?}",target, path, m_dupix);
+//         let targetname = format!("{}.html", target);
+//         let targetdir: PathBuf = wwwdir.join(path.iter().collect::<PathBuf>());
+//         let targetfile = targetdir.join(&targetname);
+//         let srcfile = path
+//             .iter()
+//             // if this is a cycle (in which case, m_dupix exists), then move back up to the previous symlink-copy.
+//             // Else, we need to point to real html file, by going all the way back up to the root (www/).
+//             .skip(m_dupix.unwrap_or(0))
+//             // we need to do this with relative paths, because the whole directory will likely be moved later.
+//             .map(|_| "../")
+//             .collect::<PathBuf>()
+//             .join("../")
+//             .join(&srcdir)
+//             .join(&targetname);
+
+//         // then create the symlink: targetpath -> sourcefile
+//         trace!(
+//             "Creating symlink -- file: {:?} -> original:{:?}",
+//             targetfile,
+//             srcfile
+//         );
+//         //let srcfile = srcdir.join(target);
+
+//         // now we need to create the relevant directories (targetdir)
+//         // ignore any pre-existing directories; overlapping creation is fine.
+//         if let Err(e) = create_dir_all(&targetdir) {
+//             if e.kind() != std::io::ErrorKind::AlreadyExists {
+//                 return Err(e).context(&targetdir)?;
+//             }
+//         }
+//         symlink_file(&srcfile, &targetfile).context(&srcfile)?;
+//     }
+//     Ok(())
+// }

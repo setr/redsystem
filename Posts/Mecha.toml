@@ -1,0 +1,5 @@
+type="Category"
+name="Mecha"
+parents = ["SciFi"]
+dirname = "Category"
+aliases = ["misc studio", "shoji kawamori", "cyber", "mecha"]
