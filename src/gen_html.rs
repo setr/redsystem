@@ -51,13 +51,19 @@ pub fn get_templates(templateglob: &str) -> Tera {
     tera
 }
 
-fn gen_post(tera: &Tera, post: &PostTypes, graph: &Graph) -> Result<PostHtml, tera::Error> {
+fn gen_post(
+    tera: &Tera,
+    post: &PostTypes,
+    graph: &Graph,
+    basepath: &str,
+) -> Result<PostHtml, tera::Error> {
     let mut ctx = Context::new();
 
     let html = match post {
         PostTypes::Post(p) => {
             ctx.insert("post", &p);
             ctx.insert("children", &p.children);
+            ctx.insert("basepath", &basepath);
             tera.render("post.jinja2", &ctx)
         }
         PostTypes::Category(c) => {
@@ -67,6 +73,7 @@ fn gen_post(tera: &Tera, post: &PostTypes, graph: &Graph) -> Result<PostHtml, te
                 "childcats",
                 &graph.get_child_cats(&graph.getidx(&post.name())),
             );
+            ctx.insert("basepath", &basepath);
             ctx.insert(
                 "childposts",
                 &graph.get_child_posts(&graph.getidx(&post.name())),
@@ -82,10 +89,11 @@ fn gen_post(tera: &Tera, post: &PostTypes, graph: &Graph) -> Result<PostHtml, te
         Err(e) => Err(e),
     }
 }
-fn gen_root(tera: &Tera, graph: &Graph) -> Result<PostHtml, tera::Error> {
+fn gen_root(tera: &Tera, graph: &Graph, basepath: &str) -> Result<PostHtml, tera::Error> {
     let mut ctx = Context::new();
     ctx.insert("childcats", &graph.get_child_cats(&graph.root));
     ctx.insert("childposts", &graph.get_child_posts(&graph.root));
+    ctx.insert("basepath", &basepath);
     let html = tera.render("index.jinja2", &ctx);
     match html {
         Ok(s) => Ok(PostHtml {
@@ -99,11 +107,12 @@ pub fn gen_posts_html(
     tera: &Tera,
     posts: &[PostTypes],
     graph: &Graph,
+    basepath: &str,
 ) -> Result<Vec<PostHtml>, Vec<tera::Error>> {
     let (posts, errors): (Vec<_>, Vec<_>) = posts
         .iter()
-        .map(|p| gen_post(tera, p, graph))
-        .chain(iter::once(gen_root(tera, graph))) // inject the index node
+        .map(|p| gen_post(tera, p, graph, basepath))
+        .chain(iter::once(gen_root(tera, graph, basepath))) // inject the index node
         .partition(Result::is_ok);
 
     if errors.is_empty() {

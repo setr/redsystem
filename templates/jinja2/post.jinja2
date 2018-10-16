@@ -2,13 +2,14 @@
 {% set name = joindir(d=post.dirname, n=post.name) %}
 <html>
 <meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="/css/post.css">
+<link rel="stylesheet" type="text/css" href="{{basepath}}/css/post.css">
+{%if basepath != ""%} <base href="{{basepath}}"> {%endif%}
 <title>{{ post.name }}</title>
 </html>
 <body>
 <div class="post_wrapper">
     <div class="box url">
-        <a id="siteurl" href="/">redsys.pw</a><a id="path", href="{{ name | urlencode }}.html">/{{ name }}</a> <!-- PATH TO FILE, IF JS -->
+        <a id="siteurl" href="{{basepath}}/">redsys.pw</a><a id="path", href="{{basepath}}/{{ name | urlencode }}.html">/{{ name }}</a> <!-- PATH TO FILE, IF JS -->
     </div>
     <div class="box blank"></div>
     {{ macros::post_header(post=post) }}

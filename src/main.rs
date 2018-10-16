@@ -72,6 +72,13 @@ fn argparse<'a>() -> ArgMatches<'a> {
                 .takes_value(true)
                 .default_value("./posts"),
         ).arg(
+            Arg::with_name("basepath")
+                .long("base-path")
+                .short("b")
+                .help("Base path to set in the html, if you're not hosting from root.")
+                .takes_value(true)
+                .default_value(""),
+            ).arg(
             Arg::with_name("run_server")
             .long("run-server")
             .short("r")
@@ -160,6 +167,7 @@ fn main() {
     let cssdir = templatedir.join("css");
     let postdir = Path::new(getval("postdir"));
     let templateglob = format!("{}/jinja2/*", getval("templatedir"));
+    let basepath = getval("basepath");
 
     let loglevel = match args.occurrences_of("v") {
         0 => LevelFilter::Info,
@@ -189,7 +197,7 @@ fn main() {
         create_www(&wwwdir, &cssdir, args.is_present("delete_outdir"));
         // struct -> html
         info!("Generating html..");
-        let post_templates = unwraps_or_exits(gen_posts_html(&tera, &posts, &graph));
+        let post_templates = unwraps_or_exits(gen_posts_html(&tera, &posts, &graph, &basepath));
         // generate the actual files and symlinks
         debug!("Writing posts");
         unwrap_or_exit(create_posts(&wwwdir, &post_templates));
