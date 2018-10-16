@@ -1,8 +1,29 @@
 # redsystem
 Static blog generator with a digraph structure (ie cycles allowed)
 
-Any blog post/category can be a child of any post/category. Multiple paths can lead to the same post. The path taken is **not** recorded anywhere. JS is currently not used, and at no point should ever be required.
+Any blog post/category can be a child of any post/category. Multiple paths can lead to the same post. The path taken is **not** recorded anywhere. JS is currently not used, and at no point should ever be required. 
 
+The files hosted in this repo generate the website https://setr.github.io/redsystem/.
+
+## Default Directory Structure
+
+```
+.
+├── redsystem
+├── posts/
+├── templates/
+└── www/
+```
+`Posts/` stores your articles.
+
+`templates/` stores the html jinja2 templates and css. In the future, `templates/images/` will store your article images.
+
+`www/` stores the output, which can be copied to your static webserver as-is.
+
+Currently, how you organize articles within the `Posts/` directory makes no difference to `redsystem`. Specifically, the `dirname` field currently has no association with the directory the post/category was found in. Posts will only be read if they have the extension `.toml`.
+
+
+## Usage
 ```
 test% redsystem -h
 redsystem 0.1.0
@@ -19,11 +40,12 @@ FLAGS:
                           print the graph.
     -g, --print-graph     print a graphviz graph at the end of processing, to visually check the post relationship
                           structure
-    -r, --run_server      Run a simple webserver on localhost, serving `outdir`, to test the generated posts
+    -r, --run-server      Run a simple webserver on localhost, serving `outdir`, to test the generated posts
     -v, --verbose         Use verbose output. Repeat to increase verbosity, up to 3 times.
     -V, --version         Prints version information
 
 OPTIONS:
+    -b, --base-path <basepath>       Base path to set in the html, if you're not hosting from root. [default: ]
     -o, --outdir <outdir>            Directory to write generated files to [default: ./www]
     -p, --posts <postdir>            Directory to fetch content files from [default: ./posts]
     -t, --templates <templatedir>    Directory to fetch html templates and css from [default: ./templates]
@@ -122,9 +144,22 @@ aliases=["SciFi", "Sci-Fi"]
 slkjsdlfdjsl
 ```
 
+
 ### Create html files, remove /www directory, and run a simple webserver to take a look at it
 ```
 test% redsystem -fr
+20:12:36 [INFO] Parsing posts..
+20:12:36 [INFO] Found 5 posts
+20:12:36 [WARN] Removing directory "./www"
+20:12:36 [INFO] Generating html..
+20:12:36 [INFO] Finished
+20:12:36 [INFO] Starting webserver
+20:12:36 [INFO] Running webserver on 127.0.0.1:3000 ...
+```
+
+### Hosting on github's gh-page
+```
+redsystem -f -o www -b "/redsystem"
 20:12:36 [INFO] Parsing posts..
 20:12:36 [INFO] Found 5 posts
 20:12:36 [WARN] Removing directory "./www"
@@ -158,4 +193,3 @@ digraph {{
     4 -> 5
 }}
 ```
-
