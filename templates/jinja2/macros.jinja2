@@ -5,15 +5,4 @@
         <div class="right">[{{ post.year }}]</div>
         {%- endif %}
     </div>
-        <div class="box image"><img src="{{ post.image }}"></div>
-        <div class="box tags">
-            <ul class="post-sidebar">
-            {% for p in post.parent_names %}
-                <li ><a class="parent_url" href="{{basepath}}/{{ p.path | urlencode }}.html"><span class="uparrow">➤</span> /{{ p.title }}</a></li>
-            {% endfor %}
-            {% for c in post.children %}
-                <li ><a class="child_url" href="{{basepath}}/{{ c.path | urlencode }}.html">/{{ c.title }}</a></li>
-            {% endfor %}
-        </ul>
-    </div>
 {%- endmacro %}
