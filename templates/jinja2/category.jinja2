@@ -23,7 +23,7 @@
         {% endfor %}
         {% for post in childposts %} 
             <div class="post_wrapper">
-                {{ macros::post_header(post=post) }}
+                {{ macros::post_header(post=post,basepath=basepath) }}
             </div>
         {% endfor %}
     </div>

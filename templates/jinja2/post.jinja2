@@ -12,7 +12,7 @@
         <a id="siteurl" href="/{{basepath}}/">redsys.pw</a><a id="path", href="/{{basepath}}/{{ name | urlencode }}.html">/{{ name }}</a> <!-- PATH TO FILE, IF JS -->
     </div>
     <div class="box blank"></div>
-    {{ macros::post_header(post=post) }}
+    {{ macros::post_header(post=post, basepath=basepath) }}
     <div class="box body">
         {{ post.body | parsemd | safe }}
     </div>

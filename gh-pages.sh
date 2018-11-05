@@ -6,7 +6,7 @@ then
     exit 1
 fi
 
-target/debug/redsystem -f -o www -b "/redsystem"
+target/debug/redsystem -f -o www -b "redsystem"
 if [ $? -ne 0 ]
 then
     echo "Pre-Commit Error: www/ generation failed"
