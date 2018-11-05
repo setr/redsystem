@@ -4,6 +4,7 @@ use petgraph::graph::NodeIndex;
 use petgraph::visit::{EdgeRef, NodeIndexable};
 use posts::{Category, Post, PostTypes};
 use std::collections::HashMap;
+use std::collections::HashSet;
 #[derive(Debug)]
 pub enum PostNode<'a> {
     Node(&'a PostTypes),
@@ -214,17 +215,17 @@ impl<'a> Graph<'a> {
         let root = &self.root;
         let (parents, errors): (Vec<_>, Vec<_>) = parentlist
             .iter()
-            .map(|p| match p.as_str() {
-                "INDEX" => Some(root),
-                s => map.get(s),
-            }).partition(Option::is_some);
+            .map(|parent| match parent.as_str() {
+                "INDEX" => Ok(root),
+                s => match map.get(s) {
+                    Some(post) => Ok(post),
+                    None => Err(parent),
+                },
+            }).partition(Result::is_ok);
 
         if !errors.is_empty() {
-            let missing_parents: Vec<_> = errors
-                .iter()
-                .zip(parentlist.iter())
-                .map(|(_, ref pname)| pname.to_string())
-                .collect();
+            let missing_parents: Vec<String> =
+                errors.iter().map(|x| x.unwrap_err().to_string()).collect();
             return Err(GraphError::MissingEdgeError(
                 name.to_string(),
                 missing_parents,
