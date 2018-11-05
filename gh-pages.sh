@@ -1,4 +1,4 @@
-git branch -d gh-pages
+git branch -D gh-pages
 git branch gh-pages
 git checkout gh-pages
 
