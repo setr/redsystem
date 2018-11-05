@@ -13,6 +13,6 @@ then
     echo "Pre-Commit Error: www/ generation failed"
     exit 1
 fi
-git subtree split --prefix dist -b gh-pages
+git subtree split --prefix www/ -b gh-pages
 git push -f origin gh-pages:gh-pages
 git branch -D gh-pages 

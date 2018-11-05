@@ -2,13 +2,13 @@
 
 <html>
 <meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="{{basepath}}/css/index.css">
+<link rel="stylesheet" type="text/css" href="/{{basepath}}/css/index.css">
 <title>index.html</title>
 </html>
 <body>
 <div class="cat_wrapper">
     <div class="box cat_url">
-        <a id="siteurl" href="{{basepath}}/">redsys.pw</a>
+        <a id="siteurl" href="/{{basepath}}/">redsys.pw</a>
     </div>
     <div class="box blank"></div>
     <div class="box items">
@@ -16,7 +16,7 @@
         {% for c in childcats %}
             <div class="childcat">
                 <div class="box cat_child_title">
-                    <a class="cat_child_url" href="{{basepath}}/{{ joindir(d=c.dirname, n=c.name) | urlencode }}.html">/{{ c.name }}</a>
+                    <a class="cat_child_url" href="/{{basepath}}/{{ joindir(d=c.dirname, n=c.name) | urlencode }}.html">/{{ c.name }}</a>
                 </div>
             </div>
         {% endfor %}
