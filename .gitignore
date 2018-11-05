@@ -6,7 +6,6 @@
 # build output
 /target
 /Release
-/www
 # rust build cache files
 **/*.rs.bk
 
