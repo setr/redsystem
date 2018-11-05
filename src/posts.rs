@@ -9,10 +9,18 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use toml;
 
+#[derive(Serialize, Debug, Default, Clone)]
+pub struct TeraNextPost {
+    pub path: String,
+    pub title: String,
+}
+
 #[derive(Default, Debug, Deserialize, Serialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Category {
     pub name: String,
+    #[serde(default)]
+    pub title: String,
     #[serde(default)]
     pub parents: Vec<String>,
     #[serde(default)]
@@ -22,15 +30,17 @@ pub struct Category {
     #[serde(skip_deserializing)]
     pub body: String,
     #[serde(skip_deserializing)]
-    pub children: RefCell<Vec<String>>,
+    pub children: RefCell<Vec<TeraNextPost>>,
     #[serde(skip_deserializing)]
-    pub parent_names: RefCell<Vec<String>>,
+    pub parent_names: RefCell<Vec<TeraNextPost>>,
 }
 
 #[derive(Default, Debug, Deserialize, Serialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Post {
     pub name: String,
+    #[serde(default)]
+    pub title: String,
     #[serde(default)]
     pub parents: Vec<String>,
     #[serde(default)]
@@ -49,9 +59,9 @@ pub struct Post {
     #[serde(skip_deserializing)]
     pub body: String,
     #[serde(skip_deserializing)]
-    pub children: RefCell<Vec<String>>,
+    pub children: RefCell<Vec<TeraNextPost>>,
     #[serde(skip_deserializing)]
-    pub parent_names: RefCell<Vec<String>>,
+    pub parent_names: RefCell<Vec<TeraNextPost>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,6 +76,18 @@ impl PostTypes {
         match self {
             PostTypes::Post(p) => self.withdir(&p.name),
             PostTypes::Category(c) => self.withdir(&c.name),
+        }
+    }
+    pub fn basename(&self) -> String {
+        match self {
+            PostTypes::Post(p) => p.name.to_string(),
+            PostTypes::Category(c) => c.name.to_string(),
+        }
+    }
+    pub fn title(&self) -> String {
+        match self {
+            PostTypes::Post(p) => p.title.to_string(),
+            PostTypes::Category(c) => c.title.to_string(),
         }
     }
 
@@ -103,16 +125,28 @@ impl PostTypes {
             PostTypes::Category(c) => &c.parents,
         }
     }
-    pub fn set_children_names(&self, children: Vec<String>) {
+    pub fn set_children_names(&self, children: Vec<(String, String)>) {
+        let chs: Vec<_> = children
+            .iter()
+            .map(|(path, title)| TeraNextPost {
+                path: path.to_string(),
+                title: title.to_string(),
+            }).collect();
         match self {
-            PostTypes::Post(p) => p.children.borrow_mut().extend(children),
-            PostTypes::Category(c) => c.children.borrow_mut().extend(children),
+            PostTypes::Post(p) => p.children.borrow_mut().extend(chs),
+            PostTypes::Category(c) => c.children.borrow_mut().extend(chs),
         }
     }
-    pub fn set_parent_names(&self, parents: Vec<String>) {
+    pub fn set_parent_names(&self, parents: Vec<(String, String)>) {
+        let chs: Vec<_> = parents
+            .iter()
+            .map(|(path, title)| TeraNextPost {
+                path: path.to_string(),
+                title: title.to_string(),
+            }).collect();
         match self {
-            PostTypes::Post(p) => p.parent_names.borrow_mut().extend(parents),
-            PostTypes::Category(c) => c.parent_names.borrow_mut().extend(parents),
+            PostTypes::Post(p) => p.parent_names.borrow_mut().extend(chs),
+            PostTypes::Category(c) => c.parent_names.borrow_mut().extend(chs),
         }
     }
 }
@@ -133,14 +167,23 @@ pub fn get_post(filepath: &PathBuf) -> Result<PostTypes, errors::IOError> {
         None => String::new(),
     };
 
+    // add the body text; title defaults to name.
     match toml::from_str::<PostTypes>(&tomlcfg) {
         Ok(s) => match s {
             PostTypes::Post(mut p) => {
                 p.body = body;
+                p.title = match p.title.as_str() {
+                    "" => p.name.clone(),
+                    _ => p.title,
+                };
                 Ok(PostTypes::Post(p))
             }
             PostTypes::Category(mut c) => {
                 c.body = body;
+                c.title = match c.title.as_str() {
+                    "" => c.name.clone(),
+                    _ => c.title,
+                };
                 Ok(PostTypes::Category(c))
             }
         },
@@ -208,7 +251,7 @@ pub fn get_posts(postdir: &PathBuf) -> Result<Vec<PostTypes>, Vec<errors::IOErro
         Err(errors.into_iter().map(Result::unwrap_err).collect())
     }
 }
-pub fn get_fakeposts(posts: &[PostTypes]) -> Vec<PostTypes>{
+pub fn get_fakeposts(posts: &[PostTypes]) -> Vec<PostTypes> {
     let names: HashSet<_> = posts.iter().flat_map(|item| item.names()).collect();
 
     posts

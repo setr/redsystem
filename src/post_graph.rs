@@ -103,7 +103,7 @@ impl<'a> Graph<'a> {
         out
     }
 
-    pub fn get_children_names(self: &Self, post: &'a PostTypes) -> Vec<String> {
+    pub fn get_children_names(self: &Self, post: &'a PostTypes) -> Vec<(String, String)> {
         // now do the inverse; read the defined relationships and determine the child-relationship
         // which we'll use for the post's links.
 
@@ -111,13 +111,17 @@ impl<'a> Graph<'a> {
         let mut out: Vec<_> = self
             .graph
             .neighbors(idx)
-            .map(|s| self.ix_to_name(s).to_string())
-            .collect();
+            .map(|ix| {
+                (
+                    self.ix_to_name(ix).to_string(),
+                    self.ix_to_title(ix).to_string(),
+                )
+            }).collect();
         out.sort_unstable();
         out
     }
 
-    pub fn get_parent_names(self: &Self, post: &'a PostTypes) -> Vec<String> {
+    pub fn get_parent_names(self: &Self, post: &'a PostTypes) -> Vec<(String, String)> {
         // now do the inverse; read the defined relationships and determine the child-relationship
         // which we'll use for the post's links.
 
@@ -125,8 +129,12 @@ impl<'a> Graph<'a> {
         let mut out: Vec<_> = self
             .graph
             .neighbors_directed(idx, petgraph::Direction::Incoming)
-            .map(|s| self.ix_to_name(s).to_string())
-            .collect();
+            .map(|ix| {
+                (
+                    self.ix_to_name(ix).to_string(),
+                    self.ix_to_title(ix).to_string(),
+                )
+            }).collect();
         out.sort_unstable();
         out
     }
@@ -164,6 +172,12 @@ impl<'a> Graph<'a> {
     fn ix_to_name(self: &Self, ix: NodeIndex) -> String {
         match self.graph[ix] {
             PostNode::Node(n) => n.name(),
+            PostNode::Root() => "Root".to_string(),
+        }
+    }
+    fn ix_to_title(self: &Self, ix: NodeIndex) -> String {
+        match self.graph[ix] {
+            PostNode::Node(n) => n.title(),
             PostNode::Root() => "Root".to_string(),
         }
     }

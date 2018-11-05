@@ -1,6 +1,6 @@
 {% macro post_header(post, basepath) -%} 
     <div class="box title">
-        <div class="left"><a href="/{{basepath}}/{{ joindir(d=post.dirname, n=post.name) | urlencode }}.html">{{ post.name }}</a></div>
+        <div class="left"><a href="{{basepath}}/{{ joindir(d=post.dirname, n=post.name) | urlencode }}.html">{{ post.title }}</a></div>
         {%- if post.year -%}
         <div class="right">[{{ post.year }}]</div>
         {%- endif %}
@@ -8,11 +8,11 @@
         <div class="box image"><img src="{{ post.image }}"></div>
         <div class="box tags">
             <ul class="post-sidebar">
-            {% for parent in post.parent_names %}
-                <li ><a class="parent_url" href="/{{basepath}}/{{ parent | urlencode }}.html"><span class="uparrow">➤</span> /{{ parent }}</a></li>
+            {% for p in post.parent_names %}
+                <li ><a class="parent_url" href="{{basepath}}/{{ p.path | urlencode }}.html"><span class="uparrow">➤</span> /{{ p.title }}</a></li>
             {% endfor %}
-            {% for child in post.children %}
-                <li ><a class="child_url" href="/{{basepath}}/{{ child | urlencode }}.html">/{{ child }}</a></li>
+            {% for c in post.children %}
+                <li ><a class="child_url" href="{{basepath}}/{{ c.path | urlencode }}.html">/{{ c.title }}</a></li>
             {% endfor %}
         </ul>
     </div>

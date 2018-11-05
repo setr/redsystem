@@ -72,7 +72,6 @@ fn argparse<'a>() -> ArgMatches<'a> {
             .short("b")
             .help("Base path to set in the html, if you're not hosting from root.")
             .takes_value(true)
-            .default_value("")
         ).arg(Arg::with_name("strict")
             .long("strict")
             .help("Stop generation on error")
@@ -92,20 +91,20 @@ fn argparse<'a>() -> ArgMatches<'a> {
 }
 fn unwraps_or_exits<T, E: Display + Debug>(t: Result<Vec<T>, Vec<E>>) -> Vec<T> {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{}", e));
+        errors.iter().for_each(|e| error!("{:?}", e));
         std::process::exit(1)
     })
 }
 fn unwrap_or_exits<T, E: Display + Debug>(t: Result<T, Vec<E>>) -> T {
     t.unwrap_or_else(|errors| {
-        errors.iter().for_each(|e| error!("{}", e));
+        errors.iter().for_each(|e| error!("{:?}", e));
         std::process::exit(1)
     })
 }
 
 fn unwrap_or_exit<T, E: Display + Debug>(t: Result<T, E>) -> T {
     t.unwrap_or_else(|e| {
-        error!("{}", e);
+        error!("{:?}", e);
         std::process::exit(1)
     })
 }
@@ -173,7 +172,10 @@ fn main() {
     let imgdir = templatedir.join("img");
     let postdir = Path::new(getval("postdir"));
     let templateglob = format!("{}/jinja2/*", getval("templatedir"));
-    let basepath = getval("basepath");
+    let basepath = match args.value_of("basepath") {
+        Some(b) => format!("/{}", b),
+        None => String::from(""),
+    };
     let strictmode = args.is_present("strict");
 
     let loglevel = match args.occurrences_of("v") {

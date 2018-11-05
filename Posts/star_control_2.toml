@@ -1,5 +1,6 @@
 type = "Post"
-name = 'Star Control II - The Urquan Masters'
+name = 'star_control_2'
+title = 'Star Control II - The Urquan Masters'
 aliases = ["Star Control II", "Star Control 2"]
 image = "https://draginol.stardock.net/images2018/The-art-of-Star-Control_C786/image.png"
 year = "1992"

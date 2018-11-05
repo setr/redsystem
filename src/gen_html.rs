@@ -59,11 +59,12 @@ fn gen_post(
 ) -> Result<PostHtml, tera::Error> {
     let mut ctx = Context::new();
 
+    ctx.insert("title", &post.title());
+    ctx.insert("basepath", &basepath);
     let html = match post {
         PostTypes::Post(p) => {
             ctx.insert("post", &p);
             ctx.insert("children", &p.children);
-            ctx.insert("basepath", &basepath);
             tera.render("post.jinja2", &ctx)
         }
         PostTypes::Category(c) => {
@@ -73,7 +74,6 @@ fn gen_post(
                 "childcats",
                 &graph.get_child_cats(*graph.getidx(&post.name())),
             );
-            ctx.insert("basepath", &basepath);
             ctx.insert(
                 "childposts",
                 &graph.get_child_posts(*graph.getidx(&post.name())),
