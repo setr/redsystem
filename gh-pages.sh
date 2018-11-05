@@ -1,6 +1,4 @@
 git branch -D gh-pages
-git branch gh-pages
-git checkout gh-pages
 
 cargo build
 if [ $? -ne 0 ]
@@ -15,8 +13,6 @@ then
     echo "Pre-Commit Error: www/ generation failed"
     exit 1
 fi
-git add www/ && git commit -m "updating gh-pages"
-#git push --set-upstream origin gh-pages
-git subtree push --delete --prefix www/ origin gh-pages
-git checkout master
-
+git subtree split --prefix dist -b gh-pages
+git push -f origin gh-pages:gh-pages
+git branch -D gh-pages 
