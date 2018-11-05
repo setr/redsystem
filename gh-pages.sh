@@ -17,6 +17,6 @@ then
 fi
 git add www/ && git commit -m "updating gh-pages"
 #git push --set-upstream origin gh-pages
-git subtree push --prefix www/ origin gh-pages
+git subtree push --delete --prefix www/ origin gh-pages
 git checkout master
 
