@@ -12,6 +12,9 @@ The files hosted in this repo generate the website https://setr.github.io/redsys
 ├── redsystem
 ├── posts/
 ├── templates/
+│   ├── css/
+│   ├── img/
+│   └── jinja2/
 └── www/
 ```
 `Posts/` stores your articles.
