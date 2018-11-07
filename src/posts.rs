@@ -7,6 +7,8 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
+use std::fmt;
+use serde::de::{Visitor, SeqAccess, value, Deserialize, Deserializer};
 use toml;
 
 #[derive(Serialize, Debug, Default, Clone)]
@@ -21,10 +23,12 @@ pub struct Category {
     pub name: String,
     #[serde(default)]
     pub title: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "string_or_vec", rename="parent")]
     pub parents: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "string_or_vec", rename="alias")]
     pub aliases: Vec<String>,
+    #[serde(default)]
+    pub description: String,
     #[serde(default)]
     pub dirname: String, // associated directory
     #[serde(skip_deserializing)]
@@ -41,12 +45,10 @@ pub struct Post {
     pub name: String,
     #[serde(default)]
     pub title: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "string_or_vec", rename="parent")]
     pub parents: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "string_or_vec", rename="alias")]
     pub aliases: Vec<String>,
-    #[serde(default)]
-    pub description: String,
     #[serde(default)]
     pub dirname: String, // associated directory
     #[serde(default)]
@@ -189,6 +191,39 @@ pub fn get_post(filepath: &PathBuf) -> Result<PostTypes, errors::IOError> {
         },
         Err(e) => Err(invalid_header(e, filepath.to_path_buf())),
     }
+}
+
+fn string_or_vec<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+    where D: Deserializer<'de>
+{
+    struct StringOrVec;
+
+    impl<'de> Visitor<'de> for StringOrVec {
+        type Value = Vec<String>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("string or list of strings")
+        }
+
+        fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
+            where E: serde::de::Error
+        {
+            Ok(vec![s.to_owned()])
+        }
+        fn visit_string<E>(self, s: String) -> Result<Self::Value, E>
+            where E: serde::de::Error
+        {
+            Ok(vec![s.to_owned()])
+        }
+
+        fn visit_seq<S>(self, seq: S) -> Result<Self::Value, S::Error>
+            where S: SeqAccess<'de>
+        {
+            Deserialize::deserialize(value::SeqAccessDeserializer::new(seq))
+        }
+    }
+
+    deserializer.deserialize_any(StringOrVec)
 }
 
 fn find_files<F: Fn(&PathBuf) -> bool>(

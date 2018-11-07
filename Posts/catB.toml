@@ -1,3 +1,3 @@
 type = "Category"
 name="CatB"
-parents = ["CatA"]
+parent = ["CatA"]

@@ -1,9 +1,9 @@
 type = "Post"
 name = 'Star Control: Famous Battles of the Ur-Quan Conflict, Volume IV'
-aliases = ["Star Control"]
+alias = ["Star Control"]
 image = "http://4.bp.blogspot.com/-uJiRZMgyuQ0/UQVwZc-XwYI/AAAAAAAAArI/N7rhTIeb2-Y/s1600/36313-star-control-amiga-screenshot-the-syreen-penetrators-1.gif"
 year = "1990"
-parents = ["SciFi"]
+parent = ["SciFi"]
 ---
 **Star Control: Famous Battles of the Ur-Quan Conflict Volume IV** was developed by Fred Ford and Paul Reiche III. It was released for the PC in 1990 and (in a somewhat cut-down form, and called simply Star Control) for the Commodore 64 in 1991 by Accolade. 
 

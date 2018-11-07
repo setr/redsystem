@@ -4,6 +4,7 @@ extern crate quick_error;
 #[macro_use]
 extern crate serde_derive;
 extern crate pulldown_cmark;
+extern crate serde;
 #[macro_use]
 extern crate tera;
 extern crate indicatif;
@@ -204,12 +205,6 @@ fn main() {
     graph.add_posts(&posts);
 
     unwrap_or_exits(graph.add_edges(&posts));
-
-    fn modify<T>(v: &mut T) {}
-    fn read<T>(v: &T) {}
-    let mut v = vec![1, 2, 3];
-    modify(&mut v);
-    read(&v);
 
     for post in &posts {
         post.set_children_names(graph.get_children_names(&post));

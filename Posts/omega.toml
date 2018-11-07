@@ -1,11 +1,10 @@
 type="Post"
 name = "Omega Boost"
-aliases=["Omega", "omega"]
+alias=["Omega", "omega"]
 year = "1993"
-description = "Omega Boost"
 image = "https://gamefaqs.akamaized.net/box/8/6/6/5866_front.jpg"
 dl_url = "url.org/#64zx79sYfq2TD82vTexI19DKua4Ns8YXMHBYWkrsCMpUZRaj1QLAUjKxIApEE1cQGt8wviSh8pH58N623HviJiFq7T4oFlOZCMov"
-parents = ["SciFi", "Category/Mecha", "CatB"]
+parent = ["SciFi", "Category/Mecha", "CatB"]
 ---
 Lorem ipsum dolor sit amet, magna iusto senserit vel in, ignota eirmod officiis cu quo, posidonium necessitatibus no eum. Cu mea diceret mediocrem dissentias, sed partem recusabo invenire ut. Ex adipisci tacimates pri. Vide nemore molestie ad quo. Mea quidam regione antiopam te. Eius iracundia eam ad, putent nominavi ex eos.
 

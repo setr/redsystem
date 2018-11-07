@@ -1,10 +1,10 @@
 type = "Post"
 name = 'star_control_2'
 title = 'Star Control II - The Urquan Masters'
-aliases = ["Star Control II", "Star Control 2"]
+alias = ["Star Control II", "Star Control 2"]
 image = "https://draginol.stardock.net/images2018/The-art-of-Star-Control_C786/image.png"
 year = "1992"
-parents = ["SciFi", "Star Control"]
+parent = ["SciFi", "Star Control"]
 ---
 **Star Control II: The Ur-Quan Masters** is a science fiction video game, a sequel to Star Control. It was developed by Toys for Bob and originally published by Accolade in 1992 for MS-DOS. 
 
