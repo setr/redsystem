@@ -28,8 +28,6 @@ pub struct Category {
     #[serde(default, deserialize_with = "string_or_vec", rename="alias")]
     pub aliases: Vec<String>,
     #[serde(default)]
-    pub description: String,
-    #[serde(default)]
     pub dirname: String, // associated directory
     #[serde(skip_deserializing)]
     pub body: String,
