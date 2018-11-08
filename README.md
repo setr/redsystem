@@ -28,7 +28,7 @@ Currently, how you organize articles within the `Posts/` directory makes no diff
 
 ## Usage
 ```
-test% redsystem -h
+% ./target/debug/redsystem -h
 redsystem 0.1.0
 setr <nokhand@gmail.com>
 Static blog generator with cyclical digraph structure
@@ -44,11 +44,12 @@ FLAGS:
     -g, --print-graph     print a graphviz graph at the end of processing, to visually check the post relationship
                           structure
     -r, --run-server      Run a simple webserver on localhost, serving `outdir`, to test the generated posts
+        --strict          Stop generation on error
     -v, --verbose         Use verbose output. Repeat to increase verbosity, up to 3 times.
     -V, --version         Prints version information
 
 OPTIONS:
-    -b, --base-path <basepath>       Base path to set in the html, if you're not hosting from root. [default: ]
+    -b, --base-path <basepath>       Base path to set in the html, if you're not hosting from root.
     -o, --outdir <outdir>            Directory to write generated files to [default: ./www]
     -p, --posts <postdir>            Directory to fetch content files from [default: ./posts]
     -t, --templates <templatedir>    Directory to fetch html templates and css from [default: ./templates]
@@ -76,14 +77,12 @@ Metadata:
     [Optional] dirname: String
         The directory from root which will contain this. Acts as a namespace, and appears in the URL when visiting the page. ie "Artists" or "Artists/Tokyo". 
         This is the canonical root directory of a node.
-    [Optional] aliases: [String]
+    [Optional] alias: [String]
         Alternative names that this post can be referenced by. Must be unique across all posts in the `dirname` namespace.
-    [Optional] parents: [String]
+    [Optional] parent: [String]
         List of parent nodes, referenced by name/alias. Duplicate references to the same parent will be ignored.
         If no parents are listed, or the parent "INDEX" exists, it will be attached to the implicit index node (which produces index.html).
         Parents must be listed with the full path. ie if `Star Control` has alias `sc` and has dirname `Category`, then it be referenced as a parent with "Category/sc" or "Category/Star Control"
-    [Optional] description: String
-        Short one-line description of the post
     [Optional] image: String
         URL for post's main image, or name of the image stored in templates/images.
     [Optional] year: String
@@ -98,9 +97,9 @@ or
     [Optional] dirname: String
         The directory from root which will contain this. Acts as a namespace, and appears in the URL when visiting the page. ie "Artists" or "Artists/Tokyo". 
         This is the canonical root directory of a node.
-    [Optional] aliases: [String]
+    [Optional] alias: [String]
         Alternative names that this post can be referenced by. Must be unique across all posts in the `dirname` namespace.
-    [Optional] parents: [String]
+    [Optional] parent: [String]
         List of parent nodes, referenced by name/alias. Duplicate references to the same parent will be ignored.
         If no parents are listed, or the parent "INDEX" exists, it will be attached to the implicit index node (which produces index.html).
         Parents must be listed with the full path. ie if `Star Control` has alias `sc` and has dirname `Category`, then it be referenced as a parent with "Category/sc" or "Category/Star Control"
@@ -115,10 +114,10 @@ Note that they can reference each other (using the parents field) arbitrarily; t
 ```
 type = "Post"
 name = 'Star Control: Famous Battles of the Ur-Quan Conflict, Volume IV'
-aliases = ["Star Control"]
+alias = "Star Control"
 image = "http://4.bp.blogspot.com/-uJiRZMgyuQ0/UQVwZc-XwYI/AAAAAAAAArI/N7rhTIeb2-Y/s1600/36313-star-control-amiga-screenshot-the-syreen-penetrators-1.gif"
 year = "1990"
-parents = ["SciFi"]
+parent = "SciFi"
 ---
 **Star Control: Famous Battles of the Ur-Quan Conflict Volume IV** was developed by Fred Ford and Paul Reiche III. It was released for the PC in 1990 and (in a somewhat cut-down form, and called simply Star Control) for the Commodore 64 in 1991 by Accolade. 
 
