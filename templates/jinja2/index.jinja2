@@ -1,10 +1,7 @@
 {%import "macros.jinja2" as macros %}
 
-<html>
-<meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="{{basepath}}/css/index.css">
-<title>index.html</title>
-</html>
+{{macros::html(title="index.html", basepath=basepath)}}
+
 <body>
 <div class="cat_wrapper">
     <div class="box cat_url">

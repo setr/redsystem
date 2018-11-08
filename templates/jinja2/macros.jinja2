@@ -6,3 +6,11 @@
         {%- endif %}
     </div>
 {%- endmacro %}
+
+{% macro html(title, basepath) -%} 
+<html>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="{{basepath}}/css/style.css">
+<title>{{title}}</title>
+</html>
+{%- endmacro %}

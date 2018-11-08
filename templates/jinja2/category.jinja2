@@ -1,11 +1,8 @@
 {%import "macros.jinja2" as macros %}
 {% set name = joindir(d=cat.dirname, n=cat.name) %}
 
-<html>
-<meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="{{basepath}}/css/category.css">
-<title>{{ title }}</title>
-</html>
+{{macros::html(title=title, basepath=basepath)}}
+
 <body>
 <div class="cat_wrapper">
     <div class="box cat_url">

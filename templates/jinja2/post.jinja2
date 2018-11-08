@@ -1,10 +1,8 @@
 {%import "macros.jinja2" as macros %}
 {% set name = joindir(d=post.dirname, n=post.name) %}
-<html>
-<meta charset="UTF-8">
-<link rel="stylesheet" type="text/css" href="{{basepath}}/css/post.css">
-<title>{{ title }}</title>
-</html>
+
+{{macros::html(title=title, basepath=basepath)}}
+
 <body>
 <div class="post_wrapper">
     <div class="box url">
