@@ -1,0 +1,211 @@
+html {
+  margin: 2em;
+  background-color: black;
+  font-family: Arial, Helvetica, sans-serif, "Helvetica", sans-serif;
+  font-size: 1em
+}
+
+a {
+  color: black;
+  text-decoration: none
+}
+
+a:hover {
+  color: white
+}
+
+.parent_url:hover {
+  color: blue
+}
+
+.box.title, .box.url, .box.cat_url, .box.body, .box.cat_child_title {
+  background-color: red
+}
+
+.box.tags {
+  background-color: white
+}
+
+.link.url {
+  background-color: blue
+}
+
+.box.title {
+  grid-area: title
+}
+
+.box.url {
+  grid-area: url
+}
+
+.box.items {
+  grid-area: items
+}
+
+.childcat:first-child {
+  margin-top: 2em
+}
+
+.childcat {
+  margin-top: 0.5em
+}
+
+.box.blank {
+  grid-area: blank;
+  grid-gap: 2em
+}
+
+.box.image {
+  grid-area: img
+}
+
+.box.body {
+  grid-area: body
+}
+
+div.box.image > img {
+  width: 382px;
+  height: 382px
+}
+
+.post-sidebar {
+  list-style-type: none
+}
+
+.post-sidebar > li {
+  font-size: 1.25em
+}
+
+.box.tags {
+  grid-area: tags
+}
+
+.box.cat_url {
+  grid-area: cat_url;
+  font-size: 1.5em;
+  width: 97%
+}
+
+.box.link {
+  grid-area: link;
+  display: flex;
+  flex-direction: column
+}
+
+.box.body, .link.url, .box.tags {
+  padding-left: 2.5%;
+  padding-right: 2.5%;
+  width: 95%
+}
+
+.box.tags {
+  padding-top: 2%
+}
+
+.box.tags>ul {
+  margin: 0px;
+  padding: 0px;
+  overflow-wrap: break-word
+}
+
+.box.body>p {
+}
+
+.box.title>.right {
+  float: right
+}
+
+.box.title>.left {
+  float: left
+}
+
+.box.title, .box.url, .box.cat_url, .box.cat_child_title {
+  padding: 1.5% 1.5% 1.5% 1.5%
+}
+
+.box.url {
+  font-size: 1.5em;
+  width: 97%
+}
+
+.link.url {
+  overflow-wrap: break-word;
+  text-align: center
+}
+
+.link.blank {
+  flex-grow: 1
+}
+
+.post_wrapper {
+  display: grid;
+  grid-gap: 1.1em;
+  width: 550px;
+  grid-template-columns: 69.5% 28.2%;
+  grid-template-areas: "url url"
+  "blank blank"
+  "title title"
+  "img tags"
+  "body link"
+}
+
+.cat_wrapper {
+  display: grid;
+  width: 550px;
+  grid-template-areas: "cat_url"
+  "blank"
+  "items"
+}
+
+.uparrow {
+  transform: rotate(-90deg);
+  display: inline-block
+}
+
+.box {
+  color: black
+}
+
+ul {
+  list-style: none
+}
+
+@media screen and (max-width:625px) {
+  html {
+    font-size: .75em
+  }
+
+  .post_wrapper {
+    width: 35em
+  }
+
+  .cat_wrapper {
+    width: 35em
+  }
+
+  div.box.image > img {
+    width: 277px;
+    height: 277px
+  }
+
+}
+
+@media screen and (min-width:875px) {
+  html {
+    font-size: 1.2em
+  }
+
+  .post_wrapper {
+    width: 800px
+  }
+
+  .cat_wrapper {
+    width: 800px
+  }
+
+  div.box.image > img {
+    width: 555px;
+    height: 555px
+  }
+
+}
